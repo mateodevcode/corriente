@@ -67,19 +67,22 @@ jobs:
               echo "⚠️ npm no encontrado en VPS — instala Node 20 para buildear admin"
             fi
 
+            echo "→ SSL (certbot)..."
+            if [ ! -f /etc/letsencrypt/live/corriente.seventwo.tech/fullchain.pem ]; then
+              echo "→ Certificado no existe — generando con certbot standalone..."
+              # Temporal: sirve en :80 para la validación ACME
+              sudo systemctl stop nginx 2>/dev/null || true
+              sudo certbot certonly --standalone -d corriente.seventwo.tech --non-interactive --agree-tos -m admin@seventwo.tech
+              sudo systemctl start nginx 2>/dev/null || true
+            else
+              echo "→ Certificado ya existe — renovando si es necesario..."
+              sudo certbot renew --quiet
+            fi
+
             echo "→ Nginx (corriente.seventwo.tech)..."
-            # Copia el vhost y recarga solo si cambió
-            BEFORE=$(sha256sum /etc/nginx/sites-available/corriente 2>/dev/null | cut -d' ' -f1 || echo "none")
             sudo cp nginx/corriente.conf /etc/nginx/sites-available/corriente
             sudo ln -sf ../sites-available/corriente /etc/nginx/sites-enabled/corriente
-            AFTER=$(sha256sum /etc/nginx/sites-available/corriente | cut -d' ' -f1)
-            if [ "$BEFORE" != "$AFTER" ]; then
-              echo "→ corriente.conf cambió — recargando nginx..."
-              sudo nginx -t && sudo systemctl reload nginx
-            else
-              echo "→ corriente.conf sin cambios — no se recarga nginx"
-              sudo nginx -t
-            fi
+            sudo nginx -t && sudo systemctl reload nginx
 
             echo "→ Limpieza imágenes viejas..."
             docker image prune -f
