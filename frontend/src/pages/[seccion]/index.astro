@@ -1,0 +1,45 @@
+---
+// === Página de sección (/politica, /tecnologia, ...) ===
+// Lista cronológica de artículos publicados de una sección.
+
+import Base from '../../layouts/Base.astro'
+import ArticuloCard from '../../components/ArticuloCard.astro'
+import { api } from '../../lib/api.js'
+
+// SSR: la sección se resuelve por request contra la API (sin getStaticPaths)
+// El param de la carpeta [seccion] es "seccion" (no "slug" como en las otras rutas)
+const { seccion } = Astro.params
+const categorias = await api.categorias()
+const categoria = categorias.find((c) => c.slug === seccion)
+
+// Si la sección no existe, la lista sale vacía y se muestra el aviso
+const articulos = categoria ? await api.articulos({ categoria: seccion, porPagina: 24 }) : []
+---
+
+<Base titulo={`${categoria?.nombre || 'Sección'} — Corriente`}>
+  <section class="border-b border-border py-10 lg:py-14">
+    <p class="mb-2 text-xs font-bold uppercase tracking-kicker text-primary">
+      {categoria?.es_principal ? 'Sección principal' : 'Sección'}
+    </p>
+    <h1 class="font-serif text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
+      {categoria?.nombre || 'Sección no encontrada'}
+    </h1>
+    {categoria && (
+      <p class="mt-4 max-w-2xl text-muted-foreground">
+        Todas las historias publicadas de {categoria.nombre.toLowerCase()}.
+      </p>
+    )}
+  </section>
+
+  {articulos.length ? (
+    <div class="grid gap-x-8 gap-y-10 py-10 md:grid-cols-2 lg:grid-cols-3 lg:py-14">
+      {articulos.map((a) => <ArticuloCard articulo={a} />)}
+    </div>
+  ) : (
+    <p class="py-16 text-center text-muted-foreground">
+      {categoria
+        ? 'Todavía no hay historias en esta sección.'
+        : 'Esta sección no existe. Revisa la navegación.'}
+    </p>
+  )}
+</Base>

@@ -1,0 +1,46 @@
+---
+// === Tarjeta de artículo (componente visual base del periódico) ===
+// Réplica del ArticleCard del prototipo "corriente diseño/app/page.tsx":
+// imagen 3/2 con hover scale, kicker uppercase, título serif, metadatos hairline.
+
+import { fechaCorta, tiempoLectura, slugAutor, urlArticulo } from '../lib/formato.js'
+
+const { articulo } = Astro.props
+const url = urlArticulo(articulo)
+---
+
+<article class="group bg-background p-4 sm:p-5">
+  <div class="relative aspect-3/2 overflow-hidden bg-muted">
+    {articulo.imagen_portada_url ? (
+      <img
+        src={articulo.imagen_portada_url}
+        alt={articulo.titulo}
+        class="size-full object-cover transition duration-500 group-hover:scale-105"
+        loading="lazy"
+      />
+    ) : (
+      <!-- Placeholder del mismo tono muted del prototipo cuando no hay imagen -->
+      <div class="flex size-full items-center justify-center font-serif text-2xl text-muted-foreground">C</div>
+    )}
+  </div>
+  <div class="pt-5">
+    <a
+      href={articulo.categoria?.slug ? `/${articulo.categoria.slug}` : '/'}
+      class="mb-2 inline-block text-xs font-bold uppercase tracking-kicker text-primary hover:underline"
+    >
+      {articulo.categoria?.nombre || 'Corriente'}
+    </a>
+    <h3 class="font-serif text-2xl font-bold leading-[1.05] tracking-[-0.03em]">
+      <a href={url} class="hover:text-primary transition">{articulo.titulo}</a>
+    </h3>
+    {articulo.resumen && (
+      <p class="mt-3 text-sm leading-6 text-muted-foreground">{articulo.resumen}</p>
+    )}
+    <div class="mt-5 flex items-center justify-between text-[11px] uppercase tracking-meta text-muted-foreground">
+      <a href={`/autor/${slugAutor(articulo.autor?.nombre_publico)}`} class="hover:text-primary">
+        {articulo.autor?.nombre_publico || 'Redacción'}
+      </a>
+      <span>{tiempoLectura(articulo.contenido)} · {fechaCorta(articulo.fecha_publicacion)}</span>
+    </div>
+  </div>
+</article>

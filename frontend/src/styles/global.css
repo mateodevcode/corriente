@@ -1,0 +1,28 @@
+/* Tailwind del frontend público — MISMO sistema de diseño compartido (raíz del proyecto). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === Base tipográfica del periódico (extraída de corriente diseño/app/globals.css) === */
+html {
+  background-color: #f6f2e5; /* --background */
+}
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;          /* --font-sans del prototipo */
+  color: #0a151e;                            /* --foreground */
+  -webkit-font-smoothing: antialiased;
+}
+::selection {
+  background-color: #c84341;  /* --primary */
+  color: #fbf8f0;             /* --primary-foreground */
+}
+
+/* Respeto por usuarios con movimiento reducido (del prototipo) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

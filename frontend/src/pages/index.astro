@@ -1,0 +1,120 @@
+---
+// === Home del periódico Corriente ===
+// Réplica de la portada del prototipo: destacado 16/8 + aside serif,
+// "Lo más leído" en grilla hairline, listado de todas las historias.
+
+import Base from '../layouts/Base.astro'
+import ArticuloCard from '../components/ArticuloCard.astro'
+import NewsletterIsland from '../islands/Newsletter.jsx'
+import { api } from '../lib/api.js'
+import { tiempoLectura, urlArticulo } from '../lib/formato.js'
+
+// Contenido desde la API (SSR: siempre fresco; degrada con gracia sin backend)
+// La portada es el artículo marcado como tal desde el panel (es_portada);
+// si nadie lo decidió aún, el más reciente hace de destacado.
+const articulos = await api.articulos({ porPagina: 12 })
+const destacado = articulos.find((a) => a.es_portada) || articulos[0]
+const secundarios = articulos.filter((a) => a !== destacado).slice(0, 3)
+---
+
+<Base titulo="Corriente — Periodismo para el mundo que viene">
+  <!-- Barra "En directo": titular más reciente de la API (dinámico) -->
+  <div class="flex items-center gap-3 border-b border-border py-3 text-xs uppercase tracking-label">
+    <span class="bg-primary px-2 py-1 font-bold text-primary-foreground">En directo</span>
+    {destacado ? (
+      <a href={urlArticulo(destacado)} class="truncate text-muted-foreground hover:text-primary">
+        {destacado.titulo}
+      </a>
+    ) : (
+      <span class="truncate text-muted-foreground">
+        La actualidad de política, tecnología y el mundo — explicada con calma.
+      </span>
+    )}
+  </div>
+
+  {destacado && (
+    <!-- Portada: grid 1.35fr/0.65fr del prototipo -->
+    <section class="grid gap-8 border-b border-border py-10 lg:grid-cols-[1.35fr_0.65fr] lg:gap-12 lg:py-14">
+      <article class="group">
+        <div class="relative aspect-16/8 overflow-hidden bg-muted">
+          {destacado.imagen_portada_url && (
+            <img
+              src={destacado.imagen_portada_url}
+              alt={destacado.titulo}
+              class="size-full object-cover transition duration-700 group-hover:scale-105"
+            />
+          )}
+          <span class="absolute left-4 top-4 bg-primary px-3 py-1 text-xs font-bold uppercase tracking-kicker text-primary-foreground">
+            Historia de portada
+          </span>
+        </div>
+        <div class="pt-6">
+          <p class="mb-3 text-xs font-bold uppercase tracking-kicker text-primary">
+            {destacado.categoria?.nombre}
+          </p>
+          <h1 class="max-w-4xl font-serif text-4xl font-bold leading-[0.98] tracking-[-0.045em] sm:text-6xl lg:text-7xl">
+            <a href={urlArticulo(destacado)}>{destacado.titulo}</a>
+          </h1>
+          {destacado.resumen && (
+            <p class="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+              {destacado.resumen}
+            </p>
+          )}
+          <div class="mt-6 flex items-center gap-4 text-xs uppercase tracking-meta text-muted-foreground">
+            <span>Por {destacado.autor?.nombre_publico || 'Redacción'}</span>
+            <span class="size-1 rounded-full bg-primary"></span>
+            <span>{tiempoLectura(destacado.contenido)} de lectura</span>
+          </div>
+        </div>
+      </article>
+      <!-- Aside editorial del prototipo -->
+      <aside class="flex flex-col justify-end border-t border-border pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
+        <p class="mb-6 font-serif text-2xl font-bold leading-tight">
+          La corriente que mueve el mundo, explicada sin ruido.
+        </p>
+        <p class="text-sm leading-6 text-muted-foreground">
+          Corriente reúne periodismo, contexto y curiosidad sobre política, tecnología
+          y todo lo que viene. No perseguimos el ruido: buscamos las preguntas que permanecen.
+        </p>
+      </aside>
+    </section>
+  )}
+
+  {secundarios.length > 0 && (
+    <!-- Lo más leído: grilla hairline (gap-px sobre bg-border, del prototipo) -->
+    <section class="py-10 lg:py-14">
+      <div class="mb-7 flex items-end justify-between gap-4">
+        <div>
+          <p class="mb-2 text-xs font-bold uppercase tracking-kicker text-primary">La selección</p>
+          <h2 class="font-serif text-3xl font-bold tracking-[-0.04em] sm:text-4xl">Lo más leído hoy</h2>
+        </div>
+        <a href="/ultima-hora" class="text-xs uppercase tracking-meta text-muted-foreground hover:text-primary">
+          Ver todo →
+        </a>
+      </div>
+      <div class="grid gap-px bg-border md:grid-cols-3">
+        {secundarios.map((a) => <ArticuloCard articulo={a} />)}
+      </div>
+    </section>
+  )}
+
+  <!-- Todas las historias -->
+  <section class="border-y border-border py-10 lg:py-14">
+    <div class="mb-7">
+      <p class="mb-2 text-xs font-bold uppercase tracking-kicker text-primary">Explora</p>
+      <h2 class="font-serif text-3xl font-bold tracking-[-0.04em] sm:text-4xl">Todas nuestras historias</h2>
+    </div>
+    {articulos.length ? (
+      <div class="grid gap-x-8 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+        {articulos.map((a) => <ArticuloCard articulo={a} />)}
+      </div>
+    ) : (
+      <p class="py-12 text-center text-muted-foreground">
+        Aún no hay historias publicadas. Vuelve pronto.
+      </p>
+    )}
+  </section>
+
+  <!-- Newsletter: island React (interactiva) con estética del prototipo; client:visible la hidrata -->
+  <NewsletterIsland client:visible />
+</Base>

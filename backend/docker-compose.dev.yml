@@ -1,0 +1,40 @@
+# === docker-compose.dev.yml — Réplica LOCAL del Postgres de producción (SOLO desarrollo) ===
+#
+# Paridad con producción (VPS):
+#   - Misma imagen: postgis/postgis:16-3.4-alpine
+#   - Mismo healthcheck
+# Diferencias intencionales con producción:
+#   - El puerto SÍ se expone al host: 5433:5432 (en producción NO se expone).
+#     Se usa 5433 porque el 5432 local ya está ocupado por otro Postgres nativo.
+#   - Contenedor, red y volumen propios, para no mezclar datos con producción.
+#
+# Uso: docker compose -f backend/docker-compose.dev.yml up -d
+
+services:
+  postgres_dev:
+    image: postgis/postgis:16-3.4-alpine   # idéntica a producción
+    container_name: postgres_local_dev
+    env_file:
+      - .env.development                   # .env unificado (POSTGRES_USER/PASSWORD/DB)
+    environment:
+      POSTGRES_INITDB_ARGS: "-c max_connections=300"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data   # volumen local separado
+    # Exposición solo-para-desarrollo: conecta DBeaver/TablePlus a localhost:5433
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adminst -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - corriente_dev_network               # red local propia (NUNCA central_network del VPS)
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  corriente_dev_network:
+    driver: bridge

@@ -1,0 +1,53 @@
+---
+// === Última Hora (/ultima-hora) ===
+// Feed cronológico transversal de TODAS las secciones (no es una categoría en la DB):
+// la API /articles/publicados sin filtro devuelve exactamente eso, ordenado por fecha.
+
+import Base from '../layouts/Base.astro'
+import { api } from '../lib/api.js'
+import { fechaCorta, urlArticulo } from '../lib/formato.js'
+
+const articulos = await api.articulos({ porPagina: 30 })
+---
+
+<Base titulo="Última Hora — Corriente">
+  <!-- Barra "En directo": el titular más reciente del feed -->
+  <div class="flex items-center gap-3 border-b border-border py-3 text-xs uppercase tracking-label">
+    <span class="bg-primary px-2 py-1 font-bold text-primary-foreground">En directo</span>
+    {articulos[0] ? (
+      <a href={urlArticulo(articulos[0])} class="truncate text-muted-foreground hover:text-primary">
+        {articulos[0].titulo}
+      </a>
+    ) : (
+      <span class="truncate text-muted-foreground">Todas las secciones, ordenadas por lo más reciente.</span>
+    )}
+  </div>
+
+  <section class="border-b border-border py-10 lg:py-14">
+    <p class="mb-2 text-xs font-bold uppercase tracking-kicker text-primary">Feed cronológico</p>
+    <h1 class="font-serif text-4xl font-bold tracking-[-0.04em] sm:text-5xl">Última Hora</h1>
+  </section>
+
+  {articulos.length ? (
+    <!-- Lista tipo timeline: fecha + titular serif (estética periódico) -->
+    <div class="divide-y divide-border border-y border-border">
+      {articulos.map((a) => (
+        <div class="flex flex-col gap-2 bg-background py-5 sm:flex-row sm:items-baseline sm:gap-8">
+          <span class="shrink-0 text-xs uppercase tracking-meta text-muted-foreground sm:w-32">
+            {fechaCorta(a.fecha_publicacion)}
+          </span>
+          <div>
+            <p class="text-[10px] font-bold uppercase tracking-kicker text-primary">
+              {a.categoria?.nombre}
+            </p>
+            <h2 class="font-serif text-2xl font-bold leading-[1.05] tracking-[-0.03em]">
+              <a href={urlArticulo(a)} class="transition hover:text-primary">{a.titulo}</a>
+            </h2>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <p class="py-16 text-center text-muted-foreground">Sin novedades por ahora.</p>
+  )}
+</Base>

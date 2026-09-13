@@ -1,0 +1,14 @@
+---
+// === Página /baja: confirmación de baja del newsletter (link del correo) ===
+// El island valida el token, muestra el email enmascarado y confirma la baja.
+
+import Base from '../layouts/Base.astro'
+import BajaNewsletter from '../islands/BajaNewsletter.jsx'
+---
+
+<Base
+  titulo="Darse de baja — La Corriente"
+  descripcion="Confirma la baja del newsletter La carta de Corriente."
+>
+  <BajaNewsletter client:load />
+</Base>

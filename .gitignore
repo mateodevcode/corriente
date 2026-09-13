@@ -1,0 +1,68 @@
+# === Sensibles — nunca commitear (solo *.example va al repo) ===
+.env
+.env.*
+!.env.*.example
+!.env.example
+frontend/.env.example
+*.pem
+*.key
+*.sqlite3
+*.db
+
+# === Python / Backend ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.venv-backend/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+
+# === Node / Frontend & Admin ===
+node_modules/
+dist/
+.astro/
+.turbo/
+.next/
+.nuxt/
+.cache/
+coverage/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === IDE / Editores ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.suo
+*.user
+*.userosscache
+
+# === Logs ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+
+# === Temporales ===
+*.tmp
+*.temp
+.opencode/
+
+datos_vps.md
+dev.mjs

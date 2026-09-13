@@ -1,0 +1,41 @@
+---
+// === Búsqueda (/busqueda?q=...) ===
+// Resultados de artículos publicados que coinciden con el texto.
+
+import Base from '../layouts/Base.astro'
+import ArticuloCard from '../components/ArticuloCard.astro'
+import { api } from '../lib/api.js'
+
+const q = Astro.url.searchParams.get('q') || ''
+const articulos = q ? await api.articulos({ buscar: q, porPagina: 24 }) : []
+---
+
+<Base titulo={q ? `Buscar: ${q} — Corriente` : 'Búsqueda — Corriente'}>
+  <section class="border-b border-border py-10 lg:py-14">
+    <p class="mb-2 text-xs font-bold uppercase tracking-kicker text-primary">Buscar</p>
+    <h1 class="font-serif text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
+      {q ? `Resultados para “${q}”` : 'Buscar en el periódico'}
+    </h1>
+    <!-- Formulario de búsqueda (funciona sin JS) -->
+    <form action="/busqueda" method="get" class="mt-8 flex w-full max-w-md border-b-2 border-foreground pb-2">
+      <input
+        type="search"
+        name="q"
+        value={q}
+        placeholder="Buscar historias"
+        class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+      />
+      <button class="text-xs font-bold uppercase tracking-meta text-primary">Buscar →</button>
+    </form>
+  </section>
+
+  {articulos.length ? (
+    <div class="grid gap-x-8 gap-y-10 py-10 md:grid-cols-2 lg:grid-cols-3 lg:py-14">
+      {articulos.map((a) => <ArticuloCard articulo={a} />)}
+    </div>
+  ) : (
+    <p class="py-16 text-center text-muted-foreground">
+      {q ? 'No encontramos historias con esa búsqueda.' : 'Escribe algo para empezar.'}
+    </p>
+  )}
+</Base>

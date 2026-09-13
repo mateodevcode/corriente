@@ -1,0 +1,40 @@
+# === docker-compose de Corriente — VPS /srv/infra ===
+# Todo en central_network (postgres_central). Sin Tailscale, todo público vía nginx.
+# Requiere: /srv/infra/postgres/.env y backend/.env.production (este último lo subes manual).
+
+services:
+  api:
+    build: ./backend
+    container_name: corriente-api
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.production
+    expose:
+      - "8000"
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks:
+      - central_network
+
+  frontend:
+    build: ./frontend
+    container_name: corriente-frontend
+    restart: unless-stopped
+    expose:
+      - "4321"
+    ports:
+      - "127.0.0.1:4321:4321"
+    environment:
+      # El SSR consulta la API vía nginx (mismo dominio /api), pero el build necesita la URL pública
+      PUBLIC_API_URL: https://corriente.seventwo.tech/api
+      PUBLIC_SITE_URL: https://corriente.seventwo.tech
+      HOST: 0.0.0.0
+      PORT: 4321
+    depends_on:
+      - api
+    networks:
+      - central_network
+
+networks:
+  central_network:
+    external: true

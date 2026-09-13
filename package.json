@@ -1,0 +1,12 @@
+{
+  "name": "corriente",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Periódico digital Corriente — Astro + Vite/React + FastAPI",
+  "scripts": {
+    "dev": "node dev.mjs",
+    "setup": "node dev.mjs --setup-only",
+    "start": "node dev.mjs --skip-setup"
+  }
+}

@@ -1,0 +1,27 @@
+# Dependencias del backend de Corriente (periódico digital)
+# FastAPI + SQLAlchemy + Alembic + Pydantic + JWT + S3
+
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# ORM y base de datos
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+alembic==1.14.0
+
+# Validación
+pydantic==2.10.4
+pydantic-settings==2.7.0
+email-validator==2.2.0
+
+# Autenticación
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+# bcrypt anclado a <4.1: passlib 1.7.4 es incompatible con bcrypt 4.1+ (ValueError 72 bytes)
+bcrypt==4.0.1
+
+# S3 / AWS
+boto3==1.35.90
+
+# Servidor
+python-multipart==0.0.20

@@ -1,0 +1,90 @@
+# .github/workflows/deploy.yml — Corriente → VPS /srv/infra/corriente
+name: Deploy Corriente
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: SSH Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+
+            echo "🚀 Despliegue Corriente → corriente.seventwo.tech (/ , /admin , /api)"
+
+            # 0. Asegurar repo en /srv/infra/corriente
+            if [ ! -d /srv/infra/corriente/.git ]; then
+              echo "→ Clonando repo por primera vez..."
+              mkdir -p /srv/infra
+              git clone ${{ github.server_url }}/${{ github.repository }}.git /srv/infra/corriente
+            fi
+            cd /srv/infra/corriente
+
+            echo "→ Preservando backend/.env.production..."
+            cp backend/.env.production /tmp/corriente.env.bak 2>/dev/null || true
+
+            echo "→ Actualizando código..."
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd -e backend/.env.production
+
+            mkdir -p backend
+            cp /tmp/corriente.env.bak backend/.env.production 2>/dev/null || true
+            rm -f /tmp/corriente.env.bak
+
+            if [ ! -f backend/.env.production ]; then
+              echo "❌ Falta backend/.env.production — créalo desde backend/.env.production.example en el VPS y vuelve a deployar"
+              exit 1
+            fi
+
+            echo "→ Creando DB corriente_db si no existe..."
+            docker exec postgres_central psql -U adminst -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='corriente_db'" | grep -q 1 || \
+              docker exec postgres_central psql -U adminst -d postgres -c "CREATE DATABASE corriente_db;"
+
+            echo "→ Build y levantada (api + frontend SSR)..."
+            docker compose build
+            docker compose up -d --remove-orphans
+
+            echo "→ Migraciones..."
+            sleep 3
+            docker exec corriente-api alembic upgrade head
+
+            echo "→ Build admin (Vite → /srv/infra/corriente/admin/dist, servido por nginx)..."
+            # Node 20 está en el VPS para el build estático del panel
+            if command -v npm >/dev/null 2>&1; then
+              cd admin && npm ci && npm run build && cd ..
+            else
+              echo "⚠️ npm no encontrado en VPS — instala Node 20 para buildear admin"
+            fi
+
+            echo "→ Nginx (corriente.seventwo.tech)..."
+            # Copia el vhost y recarga solo si cambió
+            BEFORE=$(sha256sum /etc/nginx/sites-available/corriente 2>/dev/null | cut -d' ' -f1 || echo "none")
+            sudo cp nginx/corriente.conf /etc/nginx/sites-available/corriente
+            sudo ln -sf ../sites-available/corriente /etc/nginx/sites-enabled/corriente
+            AFTER=$(sha256sum /etc/nginx/sites-available/corriente | cut -d' ' -f1)
+            if [ "$BEFORE" != "$AFTER" ]; then
+              echo "→ corriente.conf cambió — recargando nginx..."
+              sudo nginx -t && sudo systemctl reload nginx
+            else
+              echo "→ corriente.conf sin cambios — no se recarga nginx"
+              sudo nginx -t
+            fi
+
+            echo "→ Limpieza imágenes viejas..."
+            docker image prune -f
+
+            echo "→ Estado..."
+            docker compose ps
+            curl -sf https://corriente.seventwo.tech/api/ || echo "⚠️ /api no responde aún (revisa logs: docker logs corriente-api)"
+            echo "✅ Deploy Corriente OK"

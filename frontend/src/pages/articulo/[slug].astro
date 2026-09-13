@@ -1,0 +1,32 @@
+---
+// === Redirección 301: /articulo/[slug] → /{seccion}/{slug} ===
+// Ruta legacy mantenida para enlaces viejos y SEO: consulta el artículo,
+// resuelve su sección real y redirige a la URL canónica. Si el artículo
+// no existe (o no tiene sección), muestra la página de no encontrado.
+
+import Base from '../../layouts/Base.astro'
+
+const { slug } = Astro.params
+const API_URL = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000'
+const articulo = await fetch(`${API_URL}/articles/publicados/${slug}`, {
+  headers: { Accept: 'application/json' },
+})
+  .then((res) => (res.ok ? res.json() : null))
+  .catch(() => null)
+
+if (articulo?.categoria?.slug) {
+  return Astro.redirect(`/${articulo.categoria.slug}/${slug}`, 301)
+}
+---
+
+<Base titulo="Artículo no encontrado — Corriente">
+  <main class="py-24 text-center">
+    <p class="font-serif text-3xl font-bold">Artículo no encontrado</p>
+    <p class="mt-3 text-muted-foreground">
+      Puede que haya sido movido o aún no esté publicado.
+    </p>
+    <a href="/" class="mt-6 inline-block border-b-2 border-primary pb-1 text-sm font-bold uppercase tracking-meta text-primary">
+      Volver a la portada →
+    </a>
+  </main>
+</Base>

@@ -1,0 +1,13 @@
+/* Tailwind del admin — usa el MISMO sistema de diseño que el frontend público.
+   El tailwind.config.js está en la raíz del proyecto (compartido). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos base del panel: mismo fondo crema del periódico (tokens del config compartido) */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f6f2e5; /* --background de corriente diseño/app/globals.css */
+  color: #0a151e;            /* --foreground */
+}

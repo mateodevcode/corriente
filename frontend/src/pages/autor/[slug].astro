@@ -1,0 +1,43 @@
+---
+// === Perfil público de autor (/autor/[slug]) ===
+// Muestra la bio y los artículos publicados del autor.
+
+import Base from '../../layouts/Base.astro'
+import ArticuloCard from '../../components/ArticuloCard.astro'
+import { api } from '../../lib/api.js'
+
+// SSR: el autor se resuelve por request contra la API (sin getStaticPaths).
+const { slug } = Astro.params
+const articulos = await api.porAutor(slug)
+
+// Los datos de bio vendrían de un endpoint de autor; por ahora el listado basta
+const autor = articulos[0]?.autor
+---
+
+<Base titulo={`${autor?.nombre_publico || 'Autor'} — Corriente`}>
+  <section class="border-b border-border py-10 lg:py-14">
+    <p class="mb-2 text-xs font-bold uppercase tracking-kicker text-primary">Autor</p>
+    <div class="flex items-center gap-5">
+      {autor?.foto_url && (
+        <!-- Avatar cuadrado 1/1 del prototipo -->
+        <img src={autor.foto_url} alt={autor.nombre_publico} class="size-20 object-cover" />
+      )}
+      <div>
+        <h1 class="font-serif text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
+          {autor?.nombre_publico || 'Autor'}
+        </h1>
+        {autor?.bio && <p class="mt-3 max-w-2xl text-muted-foreground">{autor.bio}</p>}
+      </div>
+    </div>
+  </section>
+
+  {articulos.length ? (
+    <div class="grid gap-x-8 gap-y-10 py-10 md:grid-cols-2 lg:grid-cols-3 lg:py-14">
+      {articulos.map((a) => <ArticuloCard articulo={a} />)}
+    </div>
+  ) : (
+    <p class="py-16 text-center text-muted-foreground">
+      Este autor todavía no tiene historias publicadas.
+    </p>
+  )}
+</Base>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Panel privado: nunca indexado
+Disallow: /admin
+
+Sitemap: https://corriente.com/sitemap.xml
