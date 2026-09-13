@@ -1,6 +1,6 @@
 # Corriente — Periódico digital
 
-Periódico digital completo con doble sentido de marca: **corriente eléctrica/tecnológica** y **corriente política/ideológica**.
+Periódico digital completo con doble sentido de marca: **corriente eléctrica/tecnológica** y **corriente política/ideológica**..
 
 ## Estructura del proyecto
 
