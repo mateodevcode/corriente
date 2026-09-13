@@ -3,7 +3,13 @@
 # app.core.config, así `alembic upgrade head` funciona idéntico en local y en
 # el VPS sin cambiar comandos (solo cambia qué .env está activo).
 
+import sys
+from pathlib import Path
 from logging.config import fileConfig
+
+# Añadir /app a sys.path para que `from app.xxx` funcione independientemente
+# del directorio desde el que se ejecute alembic (Docker, CI, etc.)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
