@@ -180,6 +180,46 @@ def seed(db: Session):
         db.commit()
         print(f"  + usuario lector: {LECTOR_EMAIL} / lector2026 (prueba de comentarios)")
 
+    # --- Editor de ejemplo ---
+    EDITOR_EMAIL = "editor@corriente.com"
+    if db.query(User).filter(User.email == EDITOR_EMAIL).first() is None:
+        editor = User(
+            email=EDITOR_EMAIL,
+            nombre="Editor de Prueba",
+            rol="editor",
+            password_hash=hash_password("editor2026"),
+        )
+        db.add(editor)
+        db.commit()
+        print(f"  + usuario editor: {EDITOR_EMAIL} / editor2026")
+        db.add(Author(
+            nombre_publico="Editor de Prueba",
+            bio="Cuenta de prueba con rol editor.",
+            user_id=editor.id,
+        ))
+        db.commit()
+        print("  + autor: Editor de Prueba (ligado al editor)")
+
+    # --- Escritor de ejemplo ---
+    ESCRITOR_EMAIL = "escritor@corriente.com"
+    if db.query(User).filter(User.email == ESCRITOR_EMAIL).first() is None:
+        escritor = User(
+            email=ESCRITOR_EMAIL,
+            nombre="Escritor de Prueba",
+            rol="escritor",
+            password_hash=hash_password("escritor2026"),
+        )
+        db.add(escritor)
+        db.commit()
+        print(f"  + usuario escritor: {ESCRITOR_EMAIL} / escritor2026")
+        db.add(Author(
+            nombre_publico="Escritor de Prueba",
+            bio="Cuenta de prueba con rol escritor.",
+            user_id=escritor.id,
+        ))
+        db.commit()
+        print("  + autor: Escritor de Prueba (ligado al escritor)")
+
     # --- Artículos demo del prototipo (solo si no existen; idempotente) ---
     autor = db.query(Author).filter(Author.user_id.isnot(None)).first()
     ahora = datetime.now(timezone.utc)

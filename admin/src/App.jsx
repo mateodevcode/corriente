@@ -55,7 +55,14 @@ export default function App() {
           </Protegido>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route
+          index
+          element={
+            <PorRol roles={['admin', 'editor', 'escritor']}>
+              <Dashboard />
+            </PorRol>
+          }
+        />
         <Route
           path="articulos"
           element={
@@ -83,7 +90,7 @@ export default function App() {
         <Route
           path="comentarios"
           element={
-            <PorRol roles={['admin', 'editor']}>
+            <PorRol roles={['admin', 'editor', 'escritor']}>
               <ComentariosPage />
             </PorRol>
           }

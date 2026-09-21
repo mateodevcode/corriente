@@ -12,7 +12,7 @@ from app.schemas.comment import CommentCreate, CommentOut, CommentModerate
 from app.schemas.tag import TagCreate, TagOut
 from app.schemas.token import Token, UserPayload
 from app.schemas.s3 import PresignedUrlRequest, PresignedUrlResponse
-from app.schemas.metrics import DashboardMetrics
+from app.schemas.metrics import DashboardMetrics, WriterMetrics
 from app.schemas.subscriber import SubscriberCreate, SubscriberOut, EmailPreviewOut
 
 __all__ = [
@@ -24,6 +24,6 @@ __all__ = [
     "TagCreate", "TagOut",
     "Token", "UserPayload",
     "PresignedUrlRequest", "PresignedUrlResponse",
-    "DashboardMetrics",
+    "DashboardMetrics", "WriterMetrics",
     "SubscriberCreate", "SubscriberOut", "EmailPreviewOut",
 ]

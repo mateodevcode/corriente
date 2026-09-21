@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext.jsx'
 
 // Enlaces del menú según rol (mismo lenguaje visual del periódico: kickers uppercase)
 const MENU = [
-  { to: '/', label: 'Dashboard', roles: ['admin', 'editor'] },
+  { to: '/', label: 'Dashboard', roles: ['admin', 'editor', 'escritor'] },
   { to: '/articulos', label: 'Artículos', roles: ['admin', 'editor', 'escritor'] },
-  { to: '/comentarios', label: 'Comentarios', roles: ['admin', 'editor'] },
+  { to: '/comentarios', label: 'Comentarios', roles: ['admin', 'editor', 'escritor'] },
   { to: '/suscriptores', label: 'Suscriptores', roles: ['admin', 'editor'] },
   { to: '/categorias', label: 'Secciones', roles: ['admin', 'editor'] },
   { to: '/usuarios', label: 'Usuarios', roles: ['admin'] },

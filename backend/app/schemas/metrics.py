@@ -10,3 +10,9 @@ class DashboardMetrics(BaseModel):
     total_usuarios: int
     # Más leídos: top de artículos publicados (id, titulo, slug, vistas_estimadas)
     mas_leidos: list[dict] = []
+
+
+class WriterMetrics(BaseModel):
+    articulos_publicados: int
+    articulos_borrador: int
+    comentarios_pendientes: int  # solo en artículos del escritor
