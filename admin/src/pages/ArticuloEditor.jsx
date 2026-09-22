@@ -82,8 +82,14 @@ export default function ArticuloEditor() {
     }
     // sessionStorage solo funciona mismo origen (prod OK, dev 5173->4321 NO), así que usamos postMessage + URL fallback
     try { sessionStorage.setItem('corriente_preview', JSON.stringify(payload)) } catch {}
-    const frontUrl = import.meta.env.VITE_FRONTEND_URL || import.meta.env.PUBLIC_FRONTEND_URL || 'http://localhost:4321'
-    const base = frontUrl.includes('localhost') ? 'http://localhost:4321/preview' : `${frontUrl}/preview`
+    // En prod (Vite build) el frontend y el admin comparten origen https://corriente.seventwo.tech -> usar window.location.origin
+    let base
+    if (import.meta.env.PROD) {
+      base = `${window.location.origin}/preview`
+    } else {
+      const frontUrl = import.meta.env.VITE_FRONTEND_URL || import.meta.env.PUBLIC_FRONTEND_URL || 'http://localhost:4321'
+      base = frontUrl.includes('localhost') ? 'http://localhost:4321/preview' : `${frontUrl}/preview`
+    }
     // fallback URL (base64 corto): si el payload es grande, el navegador puede truncar, pero postMessage lo cubre
     let url = base
     try {
