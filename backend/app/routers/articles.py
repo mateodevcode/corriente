@@ -19,6 +19,7 @@ from app.models import Article, Author, Category, Tag, User
 from app.schemas import (
     ArticleCreate, ArticleOut, ArticleListOut, ArticleUpdate,
 )
+from app.utils.bloques import bloques_a_html
 from app.utils.slugs import slugify
 
 logger = logging.getLogger("corriente.articles")
@@ -43,6 +44,19 @@ def _resolver_tags(db: Session, nombres: list[str]) -> list[Tag]:
     return tags
 
 
+def _aplicar_bloques(article: Article, bloques: list | None) -> None:
+    """Si vienen bloques, deriva contenido HTML y marca versión 2."""
+    if bloques is not None:
+        # limitar a 50 bloques para evitar payloads gigantes
+        if len(bloques) > 50:
+            raise HTTPException(status_code=400, detail="Máximo 50 bloques por artículo")
+        # serializar bloques como dicts puros (Pydantic ya validó forma)
+        bloques_dicts = [b.model_dump() if hasattr(b, "model_dump") else b for b in bloques]
+        article.contenido_bloques = bloques_dicts
+        article.contenido = bloques_a_html(bloques_dicts)
+        article.contenido_version = 2
+
+
 def _serializar(article: Article) -> dict:
     """Convierte un Article ORM a dict con autor/categoría/tags expandidos."""
     return {
@@ -51,6 +65,8 @@ def _serializar(article: Article) -> dict:
         "slug": article.slug,
         "resumen": article.resumen,
         "contenido": article.contenido,
+        "contenido_bloques": getattr(article, "contenido_bloques", None),
+        "contenido_version": getattr(article, "contenido_version", 1),
         "imagen_portada_url": article.imagen_portada_url,
         "estado": article.estado,
         "es_portada": article.es_portada,
@@ -244,6 +260,16 @@ def obtener_por_id(
     return _serializar(article)
 
 
+@router.post("/preview", tags=["articles"])
+def preview_bloques(
+    datos: ArticleCreate,
+    _: User = Depends(require_role("admin", "editor", "escritor")),
+):
+    """Renderiza bloques a HTML sin persistir — para vista previa."""
+    html = bloques_a_html([b.model_dump() if hasattr(b, "model_dump") else b for b in (datos.contenido_bloques or [])])
+    return {"html": html, "bloques": datos.contenido_bloques}
+
+
 @router.post("", response_model=ArticleOut, status_code=201)
 def crear(
     datos: ArticleCreate,
@@ -268,6 +294,8 @@ def crear(
         author_id=datos.author_id,
         category_id=datos.category_id,
     )
+    # Campo derivado: si vienen bloques, sobrescribe contenido
+    _aplicar_bloques(article, datos.contenido_bloques)
     if datos.tags:
         article.tags = _resolver_tags(db, datos.tags)
     if datos.es_portada:
@@ -313,6 +341,8 @@ def actualizar(    article_id: int,
         if author is None or article.author_id != author.id:
             raise HTTPException(status_code=403, detail="No puedes editar este artículo")
     cambios = datos.model_dump(exclude_unset=True)
+    # Bloques: extraer antes de setattr para usar helper
+    bloques_nuevos = cambios.pop("contenido_bloques", None)
     # Publicado debe ser visible de inmediato: si queda sin fecha o futura, fijar a ahora
     if cambios.get("estado") == "publicado":
         fp = cambios.get("fecha_publicacion", article.fecha_publicacion)
@@ -329,6 +359,8 @@ def actualizar(    article_id: int,
     es_portada_nueva = cambios.pop("es_portada", None)
     for campo, valor in cambios.items():
         setattr(article, campo, valor)
+    if bloques_nuevos is not None:
+        _aplicar_bloques(article, bloques_nuevos)
     if tags_nombres is not None:
         article.tags = _resolver_tags(db, tags_nombres)
     # Asignar portada es exclusivo de admin/editor (decisión editorial del home)

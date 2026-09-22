@@ -18,6 +18,27 @@ body {
   color: #fbf8f0;             /* --primary-foreground */
 }
 
+/* === Prosa del artículo (bloques v2) === */
+.prosa-corriente { font-family: Georgia, serif; line-height: 1.75; }
+.prosa-corriente h2 { font-size: 1.6rem; font-weight: 700; letter-spacing:-0.03em; margin: 1.5em 0 0.5em; }
+.prosa-corriente h3 { font-size: 1.3rem; font-weight: 700; margin: 1.2em 0 0.4em; }
+.prosa-corriente h4 { font-size: 1.1rem; font-weight: 700; margin: 1em 0 0.3em; }
+.prosa-corriente p { margin: 0 0 1em; }
+.prosa-corriente a { color: #c84341; text-decoration: underline; }
+.prosa-corriente blockquote { border-left: 2px solid #c84341; padding-left: 1rem; font-style: italic; margin: 1.2em 0; }
+.prosa-corriente ul, .prosa-corriente ol { margin: 0 0 1em 1.4em; }
+.prosa-corriente li { margin: 0.2em 0; }
+.prosa-corriente hr { border: none; border-top: 1px solid #e5e0d1; margin: 2em 0; }
+.prosa-corriente figure.bloque-imagen img { width: 100%; object-fit: cover; }
+.prosa-corriente figure.bloque-imagen--half img { max-width: 50%; }
+.prosa-corriente figcaption { font-size: 0.8rem; font-style: italic; color: #6b6b6b; margin-top: 0.4em; }
+.bloque-paso { border-left: 2px solid #c84341; padding-left: 1rem; margin: 1.5em 0; }
+.bloque-paso .paso-numero { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; color: #c84341; }
+.bloque-paso .paso-titulo { font-family: Georgia, serif; font-weight: 700; margin: 0.2em 0; }
+.bloque-paso .paso-grid { display: grid; gap: 1rem; }
+@media (min-width: 768px) { .bloque-paso .paso-grid { grid-template-columns: 1fr 1fr; } }
+.bloque-paso .paso-texto { font-family: Georgia, serif; }
+
 /* Respeto por usuarios con movimiento reducido (del prototipo) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

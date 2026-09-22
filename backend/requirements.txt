@@ -20,6 +20,9 @@ passlib[bcrypt]==1.7.4
 # bcrypt anclado a <4.1: passlib 1.7.4 es incompatible con bcrypt 4.1+ (ValueError 72 bytes)
 bcrypt==4.0.1
 
+# Sanitización HTML bloques
+bleach==6.1.0
+
 # S3 / AWS
 boto3==1.35.90
 

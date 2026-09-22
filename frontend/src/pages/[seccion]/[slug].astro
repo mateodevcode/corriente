@@ -9,6 +9,7 @@ import ComentariosIsland from '../../islands/Comentarios.jsx'
 import ReaccionesIsland from '../../islands/Reacciones.jsx'
 import { api } from '../../lib/api.js'
 import { fechaLarga, tiempoLectura, slugAutor, urlArticulo } from '../../lib/formato.js'
+import { bloquesAHtml, tiempoLecturaBloques } from '../../lib/bloques.js'
 
 // SSR: el artículo se consulta a la API en cada request (siempre fresco).
 // La sección de la URL debe coincidir con la sección real del artículo:
@@ -92,7 +93,7 @@ const imagen = pagina?.imagen_portada_url || `${site}/placeholder-social.jpg`
           <span class="size-1 rounded-full bg-primary"></span>
           <span>{fechaLarga(pagina.fecha_publicacion)}</span>
           <span class="size-1 rounded-full bg-primary"></span>
-          <span>{tiempoLectura(pagina.contenido)} de lectura</span>
+          <span>{tiempoLecturaBloques(pagina.contenido_bloques, pagina.contenido)} de lectura</span>
         </div>
 
         <!-- Imagen de portada 16/8 -->
@@ -104,11 +105,12 @@ const imagen = pagina?.imagen_portada_url || `${site}/placeholder-social.jpg`
           />
         )}
 
-        <!-- Contenido HTML del WYSIWYG (prosa serif del prototipo) -->
-        <div
-          class="prosa-corriente mt-10"
-          set:html={pagina.contenido || '<p>Contenido no disponible.</p>'}
-        />
+        <!-- Contenido: bloques v2 o fallback HTML v1 -->
+        {pagina.contenido_bloques?.length ? (
+          <div class="prosa-corriente mt-10" set:html={bloquesAHtml(pagina.contenido_bloques)} />
+        ) : (
+          <div class="prosa-corriente mt-10" set:html={pagina.contenido || '<p>Contenido no disponible.</p>'} />
+        )}
 
         <!-- Reacciones/compartir (island React, client:visible para hidratar al entrar en vista) -->
         <ReaccionesIsland ruta={ruta} titulo={pagina.titulo} client:visible />

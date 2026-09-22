@@ -2,7 +2,8 @@
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -15,8 +16,11 @@ class Article(Base):
     titulo: Mapped[str] = mapped_column(String(300), index=True)
     slug: Mapped[str] = mapped_column(String(330), unique=True, index=True)
     resumen: Mapped[str | None] = mapped_column(Text)
-    # Contenido HTML generado por el editor WYSIWYG del panel
+    # Contenido HTML derivado de los bloques (compatibilidad v1)
     contenido: Mapped[str | None] = mapped_column(Text)
+    # Bloques estructurados v2 (campo derivado inverso: contenido se genera de aquí)
+    contenido_bloques: Mapped[list | None] = mapped_column(JSONB, nullable=True)
+    contenido_version: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     imagen_portada_url: Mapped[str | None] = mapped_column(String(500))
     # Estados del flujo editorial: borrador, en_revision, publicado, programado
     estado: Mapped[str] = mapped_column(String(20), default="borrador", index=True)

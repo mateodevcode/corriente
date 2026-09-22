@@ -1,0 +1,100 @@
+---
+import Base from '../layouts/Base.astro'
+---
+
+<Base titulo="Vista previa — Corriente" descripcion="Vista previa del artículo">
+  <main id="preview-root" class="mx-auto max-w-3xl py-10">
+    <p class="text-center text-xs uppercase tracking-widest text-muted-foreground">Cargando vista previa…</p>
+  </main>
+</Base>
+
+<script>
+  // Render bloques sin importar lib (inline para evitar issues de import en preview cross-port)
+  function bloquesAHtml(bloques) {
+    if (!bloques?.length) return ''
+    return bloques.map(b => {
+      const d = b.data || {}
+      if (b.tipo === 'parrafo') return d.html || ''
+      if (b.tipo === 'encabezado') {
+        const n = [2,3,4].includes(d.nivel) ? d.nivel : 2
+        const esc = (s) => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        return `<h${n}>${esc(d.texto)}</h${n}>`
+      }
+      if (b.tipo === 'imagen') {
+        if (!d.url) return ''
+        const epi = d.epigrafe ? `<figcaption>${d.epigrafe}</figcaption>` : ''
+        const cls = d.posicion === 'half' ? 'half' : 'full'
+        return `<figure class="bloque-imagen bloque-imagen--${cls}"><img src="${d.url}" alt="${d.alt||''}" loading="lazy" />${epi}</figure>`
+      }
+      if (b.tipo === 'paso') {
+        const img = d.imagen_url ? `<img src="${d.imagen_url}" alt="" loading="lazy" />` : ''
+        const head = `${d.numero ? `<div class="paso-numero">Paso ${d.numero}</div>` : ''}${d.titulo_paso ? `<h4 class="paso-titulo">${d.titulo_paso}</h4>` : ''}`
+        return `<div class="bloque-paso">${head}<div class="paso-grid">${img}<div class="paso-texto">${d.texto||''}</div></div></div>`
+      }
+      if (b.tipo === 'cita') {
+        const cite = d.autor ? `<cite>— ${d.autor}</cite>` : ''
+        return `<blockquote>${d.texto||''}${cite}</blockquote>`
+      }
+      if (b.tipo === 'lista') {
+        const tag = d.estilo === 'ol' ? 'ol' : 'ul'
+        const lis = (d.items||[]).filter(Boolean).map(i=>`<li>${i}</li>`).join('')
+        return `<${tag}>${lis}</${tag}>`
+      }
+      if (b.tipo === 'separador') return '<hr />'
+      return ''
+    }).join('\n')
+  }
+  function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML }
+  function render(payload) {
+    const root = document.getElementById('preview-root')
+    if (!root) return
+    const html = payload.bloques?.length ? bloquesAHtml(payload.bloques) : '<p>Sin contenido</p>'
+    root.innerHTML = `
+      <div class="mb-2 text-xs font-bold uppercase tracking-kicker text-primary">${esc(payload.categoria_nombre||'Vista previa')}</div>
+      <h1 class="font-serif text-4xl font-bold leading-[1.02] tracking-[-0.04em] sm:text-5xl">${esc(payload.titulo)}</h1>
+      ${payload.resumen ? `<p class="mt-4 text-lg leading-relaxed text-muted-foreground">${esc(payload.resumen)}</p>` : ''}
+      <div class="mt-4 text-xs uppercase tracking-meta text-muted-foreground">${new Date(payload.fecha).toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+      ${payload.imagen_portada_url ? `<img src="${payload.imagen_portada_url}" alt="" class="mt-6 aspect-16/8 w-full object-cover" />` : ''}
+      <div class="prosa-corriente mt-8">${html}</div>
+      <p class="mt-10 border-t border-border pt-6 text-center text-xs uppercase tracking-widest text-muted-foreground">— Vista previa, no publicado —</p>
+    `
+  }
+  function tryLoad() {
+    // 1) URL ?d=base64
+    try {
+      const params = new URLSearchParams(location.search)
+      const d = params.get('d')
+      if (d) {
+        const json = decodeURIComponent(escape(atob(decodeURIComponent(d))))
+        const payload = JSON.parse(json)
+        if (payload?.titulo || payload?.bloques) { render(payload); return true }
+      }
+    } catch {}
+    // 2) sessionStorage (mismo origen, prod)
+    try {
+      const raw = sessionStorage.getItem('corriente_preview')
+      if (raw) {
+        const payload = JSON.parse(raw)
+        if (payload?.titulo || payload?.bloques) { render(payload); return true }
+      }
+    } catch {}
+    return false
+  }
+  // intento inmediato
+  if (!tryLoad()) {
+    // 3) esperar postMessage del admin (dev cross-port 5173 -> 4321)
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'corriente_preview' && e.data?.payload) {
+        render(e.data.payload)
+      }
+    })
+    // reintentar por si el mensaje llega tarde
+    setTimeout(() => { if (!document.getElementById('preview-root')?.innerHTML.includes('prosa-corriente')) tryLoad() }, 800)
+    setTimeout(() => {
+      const root = document.getElementById('preview-root')
+      if (root && root.textContent.includes('Cargando')) {
+        root.innerHTML = '<p class="py-20 text-center">No hay datos de vista previa. Abre la preview desde el editor del panel y mantén ambas pestañas en el mismo navegador.</p>'
+      }
+    }, 3000)
+  }
+</script>
