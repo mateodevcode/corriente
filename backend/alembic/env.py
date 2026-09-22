@@ -29,7 +29,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # URL de la BD desde la config del entorno activo (nunca hardcodeada)
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Escapar % para ConfigParser (la contraseña URL-encoded contiene %2A/%40/%23)
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 # Metadata de los modelos SQLAlchemy (fuente de verdad del autogenerado)
 target_metadata = Base.metadata
