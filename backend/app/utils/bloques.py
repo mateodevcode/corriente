@@ -54,6 +54,23 @@ def bloque_a_html(b: dict) -> str:
         return f"<{tag}>{lis}</{tag}>"
     if tipo == "separador":
         return "<hr />"
+    if tipo == "boton":
+        texto = _esc(data.get("texto") or "Botón")
+        url = _esc(data.get("url") or "#")
+        cls = "btn-primario" if data.get("estilo") != "secundario" else "btn-secundario"
+        return f'<div class="bloque-boton"><a class="{cls}" href="{url}">{texto}</a></div>'
+    if tipo == "galeria":
+        imgs = [i for i in (data.get("imagenes") or []) if i]
+        epi = _esc(data.get("epigrafe", ""))
+        figs = "".join(f'<img src="{_esc(u)}" alt="" loading="lazy" />' for u in imgs)
+        cap = f"<figcaption>{epi}</figcaption>" if epi else ""
+        return f'<div class="bloque-galeria">{figs}{cap}</div>' if figs else ""
+    if tipo == "tabla":
+        heads = data.get("encabezados") or []
+        rows = data.get("filas") or []
+        thead = f"<thead><tr>{''.join(f'<th>{_esc(h)}</th>' for h in heads)}</tr></thead>" if heads else ""
+        tbody = "".join(f"<tr>{''.join(f'<td>{_esc(c)}</td>' for c in r)}</tr>" for r in rows)
+        return f"<table>{thead}<tbody>{tbody}</tbody></table>" if tbody else ""
     return ""
 
 def bloques_a_html(bloques: list | None) -> str:

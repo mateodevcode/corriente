@@ -94,6 +94,20 @@ def _serializar_lista(articles: list[Article]) -> list[dict]:
     return [_serializar(a) for a in articles]
 
 
+def _urls_bloques(bloques: list | None) -> list[str]:
+    """Extrae todas las URLs de imagen de los bloques (imagen, paso, galería)."""
+    urls = []
+    for b in bloques or []:
+        d = (b.get("data") if isinstance(b, dict) else None) or {}
+        if b.get("tipo") == "imagen" and d.get("url"):
+            urls.append(d["url"])
+        elif b.get("tipo") == "paso" and d.get("imagen_url"):
+            urls.append(d["imagen_url"])
+        elif b.get("tipo") == "galeria":
+            urls.extend([u for u in (d.get("imagenes") or []) if u])
+    return urls
+
+
 def _borrar_portada_s3(file_url: str | None) -> None:
     """Borra la portada de S3 si la URL pertenece a nuestro prefijo. No lanza si falla."""
     if not file_url or not settings.S3_BUCKET_NAME or not settings.AWS_ACCESS_KEY_ID:
@@ -357,6 +371,9 @@ def actualizar(    article_id: int,
             raise HTTPException(status_code=400, detail="El slug ya existe")
     tags_nombres = cambios.pop("tags", None)
     es_portada_nueva = cambios.pop("es_portada", None)
+    # URLs viejas para limpiar huérfanas tras el commit (portada reemplazada o imágenes quitadas)
+    portada_vieja = article.imagen_portada_url
+    bloques_viejos = set(_urls_bloques(article.contenido_bloques))
     for campo, valor in cambios.items():
         setattr(article, campo, valor)
     if bloques_nuevos is not None:
@@ -376,6 +393,13 @@ def actualizar(    article_id: int,
             article.es_portada = False
     db.commit()
     db.refresh(article)
+    # Limpieza de huérfanas: portada reemplazada + imágenes de bloques que ya no están
+    if portada_vieja and portada_vieja != article.imagen_portada_url:
+        _borrar_portada_s3(portada_vieja)
+    if bloques_nuevos is not None:
+        nuevas = set(_urls_bloques(article.contenido_bloques))
+        for u in bloques_viejos - nuevas:
+            _borrar_portada_s3(u)
     return _serializar(article)
 
 
@@ -394,7 +418,10 @@ def eliminar(
         if author is None or article.author_id != author.id:
             raise HTTPException(status_code=403, detail="No puedes eliminar este artículo")
     portada_url = article.imagen_portada_url
+    bloques = article.contenido_bloques
     db.delete(article)
     db.commit()
-    # Borrar portada en S3 solo tras commit exitoso (evita borrar si la transacción hace rollback)
+    # Borrar en S3 solo tras commit exitoso (evita borrar si la transacción hace rollback)
     _borrar_portada_s3(portada_url)
+    for u in _urls_bloques(bloques):
+        _borrar_portada_s3(u)

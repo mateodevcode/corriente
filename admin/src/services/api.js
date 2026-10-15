@@ -50,13 +50,28 @@ export async function subirImagen(archivo, tituloSlug = '') {
     content_type: archivo.type,
   }
   if (tituloSlug) payload.titulo_slug = tituloSlug
-  const { data } = await api.post('/upload/presign', payload)
+  let data
+  try {
+    ;({ data } = await api.post('/upload/presign', payload))
+  } catch (e) { throw new Error(`No se pudo firmar la subida (backend): ${e.message}`) }
   // 2) Subir directo al bucket (PUT, sin pasar por el servidor)
-  const res = await fetch(data.upload_url, {
-    method: 'PUT',
-    headers: { 'Content-Type': archivo.type },
-    body: archivo,
-  })
+  let res
+  try {
+    res = await fetch(data.upload_url, {
+      method: 'PUT',
+      headers: { 'Content-Type': archivo.type },
+      body: archivo,
+    })
+  } catch (e) {
+    // Plan B: el PUT directo está bloqueado (CORS/red) → subir vía backend (sin CORS)
+    const fd = new FormData()
+    fd.append('archivo', archivo)
+    if (tituloSlug) fd.append('titulo_slug', tituloSlug)
+    try {
+      const { data: fb } = await request('POST', '/upload/directo', fd, true)
+      return fb.file_url
+    } catch (e2) { throw new Error(`S3 bloqueado y plan B falló: ${e2.message}`) }
+  }
   if (!res.ok) throw new Error('Error subiendo imagen a S3')
   // 3) Devolver la URL pública final
   return data.file_url

@@ -1,19 +1,19 @@
-import { useState } from 'react'
-import { subirImagen, eliminarImagen } from '../../../services/api'
+import { eliminarImagen } from '../../../services/api'
 
 export default function PasoBlock({ block, onChange, tituloSlug, index }) {
   const d = block.data
-  const [subiendo, setSubiendo] = useState(false)
-  const onFile = async (f) => {
-    setSubiendo(true)
-    try {
-      const url = await subirImagen(f, tituloSlug)
-      onChange({ ...block, data: { ...d, imagen_url: url } })
-    } catch {} finally { setSubiendo(false) }
+  const preview = d._local || d.imagen_url
+  // Diferido: solo preview local, la subida ocurre en guardar()
+  const onFile = (f) => {
+    if (!f) return
+    if (d._local) URL.revokeObjectURL(d._local)
+    onChange({ ...block, data: { ...d, imagen_url: '', _local: URL.createObjectURL(f), _file: f } })
   }
   const quitar = async () => {
     const url = d.imagen_url
-    onChange({ ...block, data: { ...d, imagen_url: '' } })
+    if (d._local) URL.revokeObjectURL(d._local)
+    onChange({ ...block, data: { ...d, imagen_url: '', _local: null, _file: null } })
+    if (!url) return
     try { await eliminarImagen(url) } catch {}
   }
   return (
@@ -27,15 +27,23 @@ export default function PasoBlock({ block, onChange, tituloSlug, index }) {
       </div>
       <div className="grid gap-3 md:grid-cols-2">
         <div>
-          {d.imagen_url ? (
+          {(preview) ? (
             <div>
-              <img src={d.imagen_url} alt="" className="aspect-[4/3] w-full object-cover" />
-              <button type="button" onClick={quitar} className="mt-1 text-xs text-primary hover:underline">Quitar</button>
+              <div className="relative">
+                <img src={preview} alt="" className="aspect-[4/3] w-full object-cover" />
+                {d._file && <span className="absolute bottom-1 left-1 bg-black/60 px-1.5 py-0.5 text-[10px] uppercase text-white">Previa — se sube al guardar</span>}
+              </div>
+              <div className="mt-1 flex gap-3">
+                <button type="button" onClick={quitar} className="text-xs text-primary hover:underline">Quitar</button>
+                <label className="cursor-pointer text-xs text-muted-foreground hover:underline">Cambiar…
+                  <input type="file" className="hidden" accept="image/*" onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
+                </label>
+              </div>
             </div>
           ) : (
             <label className="flex aspect-[4/3] cursor-pointer items-center justify-center border border-dashed border-border text-xs">
-              <input type="file" className="hidden" accept="image/*" onChange={e => e.target.files[0] && onFile(e.target.files[0])} disabled={subiendo} />
-              {subiendo ? 'Subiendo…' : 'Imagen del paso'}
+              <input type="file" className="hidden" accept="image/*" onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
+              Imagen del paso
             </label>
           )}
         </div>

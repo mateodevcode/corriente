@@ -1,0 +1,159 @@
+---
+/**
+ * EnDirectoTicker.astro
+ * Ubicación sugerida: frontend/src/components/EnDirectoTicker.astro
+ *
+ * Props:
+ *   items: [{ titulo: string, url: string }]  (se usan como máximo los 5 primeros)
+ *   velocidad: píxeles por segundo (por defecto 50)
+ *
+ * Sin JavaScript en el cliente: la animación es CSS puro.
+ */
+const ITEMS_EJEMPLO = [
+  { titulo: 'La inteligencia artificial empieza a pensar en pequeño', url: '#' },
+  { titulo: 'El Congreso debate la nueva ley de datos personales', url: '#' },
+  { titulo: 'Los mercados europeos cierran con ligeras subidas', url: '#' },
+  { titulo: 'Alerta naranja por lluvias en el Mediterráneo', url: '#' },
+  { titulo: 'El Real Madrid prepara su próxima convocatoria', url: '#' },
+];
+
+const { items = ITEMS_EJEMPLO, velocidad = 50 } = Astro.props;
+const lista = items.slice(0, 5);
+
+// Duración proporcional al largo del texto para mantener velocidad constante.
+// ~11px por carácter (mayúsculas con tracking) + ~48px por separador.
+const anchoEstimado = lista.reduce((acc, i) => acc + i.titulo.length * 11 + 48, 0);
+const duracion = Math.max(20, Math.round(anchoEstimado / velocidad));
+---
+
+{
+  lista.length > 0 && (
+    <div class="ticker flex items-center gap-3 border-b border-border py-3 text-xs uppercase tracking-label">
+      {/* Escritorio: etiqueta con texto */}
+      <span class="hidden shrink-0 bg-primary px-2 py-1 font-bold text-primary-foreground md:inline-block">
+        En directo
+      </span>
+
+      {/* Móvil: círculo rojo pulsante */}
+      <span class="ticker-dot md:hidden" role="img" aria-label="En directo" />
+
+      <div
+        class="ticker-viewport min-w-0 flex-1 overflow-hidden"
+        role="region"
+        aria-label="Titulares en directo"
+      >
+        <div class="ticker-track" style={`--ticker-duracion: ${duracion}s`}>
+          {/* Copia 1 (la accesible) y copia 2 (decorativa, para el bucle sin cortes) */}
+          {[false, true].map((esCopia) => (
+            <ul class="ticker-list" aria-hidden={esCopia ? 'true' : undefined}>
+              {lista.map((item) => (
+                <li class="ticker-item">
+                  <a
+                    href={item.url}
+                    tabindex={esCopia ? -1 : undefined}
+                    class="whitespace-nowrap text-muted-foreground hover:text-primary focus-visible:text-primary"
+                  >
+                    {item.titulo}
+                  </a>
+                  <span class="ticker-sep" aria-hidden="true" />
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+<style>
+  /* ---- Banda animada ---- */
+  .ticker-viewport {
+    /* Difuminado suave en los bordes */
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  }
+
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker-scroll var(--ticker-duracion, 30s) linear infinite;
+    will-change: transform;
+  }
+
+  /* Pausa al pasar el ratón o al enfocar un enlace con teclado */
+  .ticker:hover .ticker-track,
+  .ticker:focus-within .ticker-track {
+    animation-play-state: paused;
+  }
+
+  .ticker-list {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .ticker-item {
+    display: flex;
+    align-items: center;
+  }
+
+  /* Separador: círculo rojo pequeño */
+  .ticker-sep {
+    width: 6px;
+    height: 6px;
+    margin: 0 1.5rem;
+    border-radius: 9999px;
+    background-color: #c84341; /* primary */
+    flex-shrink: 0;
+  }
+
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); } /* -50% = una copia completa */
+  }
+
+  /* ---- Círculo "en directo" (móvil) ---- */
+  .ticker-dot {
+    position: relative;
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+    background-color: #c84341; /* primary */
+  }
+
+  .ticker-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: #c84341;
+    animation: ticker-pulso 1.8s ease-out infinite;
+  }
+
+  @keyframes ticker-pulso {
+    0%   { transform: scale(1);   opacity: 0.6; }
+    100% { transform: scale(2.8); opacity: 0; }
+  }
+
+  /* ---- Reducir movimiento: sin animación, banda desplazable a mano ---- */
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track,
+    .ticker-dot::after {
+      animation: none;
+    }
+    .ticker-viewport {
+      overflow-x: auto;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    /* Ocultar la copia duplicada */
+    .ticker-list[aria-hidden='true'] {
+      display: none;
+    }
+  }
+</style>

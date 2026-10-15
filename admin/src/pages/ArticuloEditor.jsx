@@ -30,6 +30,8 @@ export default function ArticuloEditor() {
   const [error, setError] = useState('')
   const [guardando, setGuardando] = useState(false)
   const [subiendo, setSubiendo] = useState(false)
+  const [portadaLocal, setPortadaLocal] = useState(null) // preview instantáneo
+  const [portadaFile, setPortadaFile] = useState(null) // se sube al guardar (evita huérfanas)
 
   useEffect(() => {
     api.get('/categories').then(res => setCategorias(res.data))
@@ -57,18 +59,51 @@ export default function ArticuloEditor() {
     const auto = slugify(valor)
     setForm(prev => ({ ...prev, titulo: valor, slug: !slugManual ? auto : prev.slug }))
   }
-  const onPortada = async (archivo) => {
-    setSubiendo(true); setError('')
-    try {
-      const tituloSlug = slugify(form.titulo) || slugify(form.slug)
-      const url = await subirImagen(archivo, tituloSlug)
-      setCampo('imagen_portada_url', url)
-    } catch (err) { setError(`Error subiendo portada: ${err.message}`) } finally { setSubiendo(false) }
+  // Solo preview local: la subida real ocurre en guardar() → cero huérfanas si cancelas
+  const onPortada = (archivo) => {
+    if (!archivo) return
+    if (portadaLocal) URL.revokeObjectURL(portadaLocal)
+    setPortadaLocal(URL.createObjectURL(archivo))
+    setPortadaFile(archivo)
+    setCampo('imagen_portada_url', '') // se rellena al guardar
   }
   const onQuitarPortada = async () => {
     const url = form.imagen_portada_url
     setCampo('imagen_portada_url', '')
+    if (portadaLocal) URL.revokeObjectURL(portadaLocal)
+    setPortadaLocal(null); setPortadaFile(null)
+    if (!url) return // era solo preview local, nada que borrar en S3
     try { await eliminarImagen(url) } catch (err) { setError(`No se pudo borrar la imagen en S3: ${err.message}`) }
+  }
+
+  // Sube pendientes (portada + bloques con _file) y devuelve bloques limpios listos para la API
+  const subirPendientes = async (tituloSlug) => {
+    let portadaUrl = form.imagen_portada_url
+    if (portadaFile) {
+      portadaUrl = await subirImagen(portadaFile, tituloSlug)
+    }
+    const bloquesLimpios = []
+    for (const b of bloques) {
+      const d = { ...(b.data || {}) }
+      const f = d._file
+      if (f) {
+        const url = await subirImagen(f, tituloSlug)
+        delete d._file
+        if (d._local) { URL.revokeObjectURL(d._local); delete d._local }
+        if (b.tipo === 'imagen') d.url = url
+        if (b.tipo === 'paso') d.imagen_url = url
+      } else if (b.tipo === 'galeria' && d._files?.length) {
+        const urls = [...(d.imagenes || [])]
+        for (const file of d._files) urls.push(await subirImagen(file, tituloSlug))
+        ;(d._locals || []).forEach(l => l.url && URL.revokeObjectURL(l.url))
+        d.imagenes = urls.slice(0, 6)
+        delete d._files; delete d._locals
+      } else {
+        delete d._file; delete d._local
+      }
+      bloquesLimpios.push({ ...b, data: d })
+    }
+    return { portadaUrl, bloquesLimpios }
   }
 
   const abrirPreview = () => {
@@ -108,8 +143,16 @@ export default function ArticuloEditor() {
 
   const guardar = async (e) => {
     e.preventDefault()
-    if (subiendo) { setError('Espera a que termine de subir la imagen antes de guardar.'); return }
     setGuardando(true); setError('')
+    const tituloSlug = slugify(form.titulo) || slugify(form.slug) || 'articulo'
+    // 1) Subir pendientes a S3 (portada + bloques); si cancelabas antes, nada se subía
+    let portadaUrl = form.imagen_portada_url
+    let bloquesLimpios = bloques
+    try {
+      setSubiendo(true)
+      ;({ portadaUrl, bloquesLimpios } = await subirPendientes(tituloSlug))
+    } catch (err) { setError(`Error subiendo imágenes: ${err.message}`); setGuardando(false); setSubiendo(false); return }
+    setSubiendo(false)
     const hoyISO = new Date().toISOString().slice(0, 10)
     let fechaISO = null
     if (form.fecha_publicacion) {
@@ -119,8 +162,9 @@ export default function ArticuloEditor() {
 
     const cuerpo = {
       ...form,
+      imagen_portada_url: portadaUrl,
       contenido: undefined, // derivado del servidor
-      contenido_bloques: bloques,
+      contenido_bloques: bloquesLimpios,
       author_id: Number(form.author_id) || 1,
       category_id: Number(form.category_id),
       fecha_publicacion: fechaISO,
@@ -189,17 +233,28 @@ export default function ArticuloEditor() {
       </label>
 
       <div className="mt-8">
-        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Imagen de portada (S3)</span>
-        {form.imagen_portada_url ? (
+        <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Imagen de portada — se sube al guardar</span>
+        {(form.imagen_portada_url || portadaLocal) ? (
           <div className="flex items-start gap-4">
-            <img src={form.imagen_portada_url} alt="Portada" className="aspect-[3/2] w-64 object-cover" />
-            <button type="button" onClick={onQuitarPortada} className="text-xs font-bold uppercase tracking-[0.12em] text-primary hover:underline">Quitar</button>
+            <div className="relative">
+              <img src={form.imagen_portada_url || portadaLocal} alt="Portada" className="aspect-[3/2] w-64 object-cover" />
+              {portadaFile && <span className="absolute bottom-1 left-1 bg-black/60 px-1.5 py-0.5 text-[10px] uppercase text-white">Previa — se sube al guardar</span>}
+            </div>
+            <div className="grid gap-2">
+              <button type="button" onClick={onQuitarPortada} className="text-xs font-bold uppercase tracking-[0.12em] text-primary hover:underline">Quitar</button>
+              <label className="cursor-pointer text-xs text-muted-foreground hover:underline">Cambiar…
+                <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                  onChange={e=> e.target.files[0] && onPortada(e.target.files[0])} />
+              </label>
+            </div>
           </div>
         ) : (
-          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-            onChange={e=> e.target.files[0] && onPortada(e.target.files[0])} className="text-sm text-muted-foreground" disabled={subiendo} />
+          <label className="flex h-40 w-64 cursor-pointer items-center justify-center border border-dashed border-border text-sm text-muted-foreground hover:border-primary">
+            <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+              onChange={e=> e.target.files[0] && onPortada(e.target.files[0])} />
+            Subir portada
+          </label>
         )}
-        {subiendo && <p className="mt-2 text-xs text-muted-foreground">Subiendo a S3…</p>}
       </div>
 
       <div className="mt-8">

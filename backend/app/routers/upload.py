@@ -5,7 +5,7 @@ from urllib.parse import unquote, urlparse
 
 import boto3
 from botocore.client import Config as BotoConfig
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.core.config import settings
@@ -85,6 +85,39 @@ def generar_presigned(
 class EliminarImagenRequest(BaseModel):
     """URL pública de la imagen a borrar (la que devolvió /presign)."""
     file_url: str
+
+
+@router.post("/directo")
+def subir_directo(
+    archivo: UploadFile = File(...),
+    titulo_slug: str | None = Form(default=None),
+    _: User = Depends(require_role("admin", "editor", "escritor")),
+):
+    """Plan B sin CORS: el panel envía el archivo al backend y este lo sube a S3.
+
+    Usar cuando el PUT directo al bucket está bloqueado (CORS/red del navegador).
+    Límite 5 MB para no saturar la API.
+    """
+    if not settings.S3_BUCKET_NAME or not settings.AWS_ACCESS_KEY_ID:
+        raise HTTPException(status_code=500, detail="S3 no está configurado (faltan variables de entorno)")
+    extension = EXTENSIONES.get(archivo.content_type or "")
+    if extension is None:
+        raise HTTPException(status_code=400, detail="Tipo de imagen no soportado")
+    contenido = archivo.file.read()
+    if len(contenido) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Imagen muy pesada (máx 5 MB)")
+    titulo_base = slugify(titulo_slug)[:40] if titulo_slug else ""
+    base = titulo_base or slugify((archivo.filename or "imagen").rsplit(".", 1)[0])[:40] or "imagen"
+    key = f"{settings.S3_SUBFOLDER}/{base}-{uuid.uuid4().hex[:8]}.{extension}"
+    try:
+        _s3_client().put_object(
+            Bucket=settings.S3_BUCKET_NAME, Key=key,
+            Body=contenido, ContentType=archivo.content_type,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Error subiendo a S3: {exc}")
+    file_url = f"https://{settings.S3_BUCKET_NAME}.s3.{settings.S3_REGION}.amazonaws.com/{key}"
+    return {"file_url": file_url, "key": key}
 
 
 @router.post("/eliminar-imagen")

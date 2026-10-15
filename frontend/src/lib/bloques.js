@@ -31,6 +31,23 @@ export function bloquesAHtml(bloques) {
       return `<${tag}>${lis}</${tag}>`
     }
     if (b.tipo === 'separador') return '<hr />'
+    if (b.tipo === 'boton') {
+      const cls = d.estilo === 'secundario' ? 'btn-secundario' : 'btn-primario'
+      return `<div class="bloque-boton"><a class="${cls}" href="${d.url || '#'}">${d.texto || 'Botón'}</a></div>`
+    }
+    if (b.tipo === 'galeria') {
+      const imgs = (d.imagenes || []).filter(Boolean)
+      if (!imgs.length) return ''
+      const figs = imgs.map(u => `<img src="${u}" alt="" loading="lazy" />`).join('')
+      return `<div class="bloque-galeria">${figs}${d.epigrafe ? `<figcaption>${d.epigrafe}</figcaption>` : ''}</div>`
+    }
+    if (b.tipo === 'tabla') {
+      const heads = d.encabezados || []
+      const rows = d.filas || []
+      const thead = heads.length ? `<thead><tr>${heads.map(h => `<th>${h}</th>`).join('')}</tr></thead>` : ''
+      const tbody = rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')
+      return tbody ? `<table>${thead}<tbody>${tbody}</tbody></table>` : ''
+    }
     return ''
   }).join('\n')
 }

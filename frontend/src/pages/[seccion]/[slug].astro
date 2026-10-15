@@ -105,6 +105,26 @@ const imagen = pagina?.imagen_portada_url || `${site}/placeholder-social.jpg`
           />
         )}
 
+        <!-- Byline del autor bajo la portada: avatar + nombre + cargo -->
+        <div class="mt-6 flex items-center gap-3 border-y border-border py-4">
+          {pagina.autor?.foto_url ? (
+            <img src={pagina.autor.foto_url} alt={pagina.autor.nombre_publico} class="size-11 rounded-full object-cover" />
+          ) : (
+            <span class="flex size-11 items-center justify-center rounded-full bg-primary font-serif text-lg font-bold text-white">
+              {(pagina.autor?.nombre_publico || 'R').charAt(0).toUpperCase()}
+            </span>
+          )}
+          <div>
+            <a href={`/autor/${slugAutor(pagina.autor?.nombre_publico)}`} class="text-sm font-bold hover:text-primary">
+              {pagina.autor?.nombre_publico || 'Redacción Corriente'}
+            </a>
+            {pagina.autor?.bio && (
+              <p class="text-xs uppercase tracking-meta text-muted-foreground">{pagina.autor.bio}</p>
+            )}
+          </div>
+          <span class="ml-auto text-xs uppercase tracking-meta text-muted-foreground">{fechaLarga(pagina.fecha_publicacion)}</span>
+        </div>
+
         <!-- Contenido: bloques v2 o fallback HTML v1 -->
         {pagina.contenido_bloques?.length ? (
           <div class="prosa-corriente mt-10" set:html={bloquesAHtml(pagina.contenido_bloques)} />

@@ -9,6 +9,9 @@ export function nuevoBloque(tipo) {
   if (tipo === "cita") base.data = { texto: "", autor: "" };
   if (tipo === "lista") base.data = { estilo: "ul", items: [""] };
   if (tipo === "separador") base.data = {};
+  if (tipo === "boton") base.data = { texto: "Leer más", url: "", estilo: "primario" };
+  if (tipo === "galeria") base.data = { imagenes: [], epigrafe: "" };
+  if (tipo === "tabla") base.data = { encabezados: ["Col 1", "Col 2"], filas: [["", ""]] };
   return base;
 }
 
@@ -28,6 +31,9 @@ export function htmlDesdeBloques(bloques) {
     if (b.tipo === "cita") return `<blockquote>${d.texto} ${d.autor? '— '+d.autor:''}</blockquote>`;
     if (b.tipo === "lista") return `<${d.estilo}>${(d.items||[]).map(i=>`<li>${i}</li>`).join('')}</${d.estilo}>`;
     if (b.tipo === "separador") return `<hr/>`;
+    if (b.tipo === "boton") return `<p><a href="${d.url||'#'}">${d.texto||'Botón'}</a></p>`;
+    if (b.tipo === "galeria") return (d.imagenes||[]).map(u=>`<img src="${u}" />`).join('');
+    if (b.tipo === "tabla") return `<table></table>`;
     return "";
   }).join("\n");
 }

@@ -1,35 +1,39 @@
-import { subirImagen, eliminarImagen } from '../../../services/api'
-import { slugify } from '../../../lib/slugs'
+import { eliminarImagen } from '../../../services/api'
 import { useState } from 'react'
 
 export default function ImagenBlock({ block, onChange, tituloSlug }) {
   const d = block.data
-  const [subiendo, setSubiendo] = useState(false)
   const [err, setErr] = useState('')
+  const preview = d._local || d.url
 
-  const onFile = async (f) => {
-    setSubiendo(true); setErr('')
-    try {
-      const url = await subirImagen(f, tituloSlug)
-      onChange({ ...block, data: { ...d, url } })
-    } catch (e) { setErr(e.message) } finally { setSubiendo(false) }
+  // Diferido: solo preview local, la subida ocurre en guardar() → cero huérfanas
+  const onFile = (f) => {
+    if (!f) return
+    if (d._local) URL.revokeObjectURL(d._local)
+    setErr('')
+    onChange({ ...block, data: { ...d, url: '', _local: URL.createObjectURL(f), _file: f } })
   }
   const quitar = async () => {
     const url = d.url
-    onChange({ ...block, data: { ...d, url: '' } })
+    if (d._local) URL.revokeObjectURL(d._local)
+    onChange({ ...block, data: { ...d, url: '', _local: null, _file: null } })
+    if (!url) return
     try { await eliminarImagen(url) } catch {}
   }
 
   return (
     <div className="border border-border bg-card p-3">
       <div className="flex gap-3">
-        {d.url ? (
-          <img src={d.url} alt={d.alt || ''} className="h-32 w-48 object-cover" />
+        {preview ? (
+          <div className="relative">
+            <img src={preview} alt={d.alt || ''} className="h-32 w-48 object-cover" />
+            {d._file && <span className="absolute bottom-1 left-1 bg-black/60 px-1.5 py-0.5 text-[10px] uppercase text-white">Previa — se sube al guardar</span>}
+          </div>
         ) : (
-          <label className="flex h-32 w-48 cursor-pointer items-center justify-center border border-dashed border-border text-xs text-muted-foreground">
+          <label className="flex h-32 w-48 cursor-pointer items-center justify-center border border-dashed border-border text-xs text-muted-foreground hover:border-primary">
             <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-              onChange={e => e.target.files[0] && onFile(e.target.files[0])} disabled={subiendo} />
-            {subiendo ? 'Subiendo…' : 'Subir imagen'}
+              onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
+            Subir imagen
           </label>
         )}
         <div className="flex-1 space-y-2">
@@ -42,7 +46,15 @@ export default function ImagenBlock({ block, onChange, tituloSlug }) {
             <option value="full">Ancho completo</option>
             <option value="half">Media columna</option>
           </select>
-          {d.url && <button type="button" onClick={quitar} className="text-xs text-primary hover:underline">Quitar imagen</button>}
+          {preview && (
+            <div className="flex gap-3">
+              <button type="button" onClick={quitar} className="text-xs text-primary hover:underline">Quitar imagen</button>
+              <label className="cursor-pointer text-xs text-muted-foreground hover:underline">Cambiar…
+                <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                  onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
+              </label>
+            </div>
+          )}
           {err && <p className="text-xs text-primary">{err}</p>}
         </div>
       </div>

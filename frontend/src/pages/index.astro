@@ -5,6 +5,7 @@
 
 import Base from '../layouts/Base.astro'
 import ArticuloCard from '../components/ArticuloCard.astro'
+import EnDirectoTicker from '../components/EnDirectoTicker.astro'
 import NewsletterIsland from '../islands/Newsletter.jsx'
 import { api } from '../lib/api.js'
 import { tiempoLectura, urlArticulo } from '../lib/formato.js'
@@ -18,19 +19,8 @@ const secundarios = articulos.filter((a) => a !== destacado).slice(0, 3)
 ---
 
 <Base titulo="Corriente — Periodismo para el mundo que viene">
-  <!-- Barra "En directo": titular más reciente de la API (dinámico) -->
-  <div class="flex items-center gap-3 border-b border-border py-3 text-xs uppercase tracking-label">
-    <span class="bg-primary px-2 py-1 font-bold text-primary-foreground">En directo</span>
-    {destacado ? (
-      <a href={urlArticulo(destacado)} class="truncate text-muted-foreground hover:text-primary">
-        {destacado.titulo}
-      </a>
-    ) : (
-      <span class="truncate text-muted-foreground">
-        La actualidad de política, tecnología y el mundo — explicada con calma.
-      </span>
-    )}
-  </div>
+  <!-- Banda "En directo": ticker animado con los 5 más recientes de la API -->
+  <EnDirectoTicker items={articulos.slice(0, 5).map((a) => ({ titulo: a.titulo, url: urlArticulo(a) }))} />
 
   {destacado && (
     <!-- Portada: grid 1.35fr/0.65fr del prototipo -->

@@ -44,7 +44,22 @@ class BlockSeparador(BaseModel):
     tipo: Literal["separador"]
     data: dict = {}
 
-Block = Annotated[BlockParrafo | BlockEncabezado | BlockImagen | BlockPaso | BlockCita | BlockLista | BlockSeparador, Field(discriminator="tipo")]
+class BlockBoton(BaseModel):
+    id: str
+    tipo: Literal["boton"]
+    data: dict  # {texto, url, estilo}
+
+class BlockGaleria(BaseModel):
+    id: str
+    tipo: Literal["galeria"]
+    data: dict  # {imagenes:[], epigrafe}
+
+class BlockTabla(BaseModel):
+    id: str
+    tipo: Literal["tabla"]
+    data: dict  # {encabezados:[], filas:[[]]}
+
+Block = Annotated[BlockParrafo | BlockEncabezado | BlockImagen | BlockPaso | BlockCita | BlockLista | BlockSeparador | BlockBoton | BlockGaleria | BlockTabla, Field(discriminator="tipo")]
 
 
 class ArticleBase(BaseModel):
@@ -145,6 +160,7 @@ class AuthorNested(BaseModel):
     id: int
     nombre_publico: str
     foto_url: str | None
+    bio: str | None = None # cargo/línea del autor bajo la portada
 
 
 class CategoryNested(BaseModel):
