@@ -50,8 +50,8 @@ const activa = (seccion: string) =>
   <body>
     <div class="mx-auto max-w-page px-5 sm:px-8 lg:px-12">
       <!-- Cabecera: fecha / logo / suscripción (estilo del prototipo) -->
-      <header class="border-b border-border">
-        <div class="grid grid-cols-3 gap-4 py-5 items-center">
+      <header class="relative border-b border-border">
+        <div class="grid grid-cols-2 items-center gap-4 py-5 md:grid-cols-3">
           <div
             class="hidden text-xs font-semibold uppercase tracking-navbar text-muted-foreground md:block"
           >
@@ -59,10 +59,10 @@ const activa = (seccion: string) =>
           </div>
           <a
             href="/"
-            class="font-serif text-3xl font-bold tracking-[-0.06em] sm:text-4xl text-center"
+            class="text-left font-serif text-2xl font-bold tracking-[-0.06em] sm:text-3xl md:text-center"
             >LA CORRIENTE</a
           >
-          <div class="flex items-center justify-end">
+          <div class="hidden items-center justify-end md:flex">
             <a
               href="/ultima-hora"
               class={`border px-3 py-2 text-xs font-semibold uppercase tracking-meta transition ${
@@ -74,10 +74,16 @@ const activa = (seccion: string) =>
               Última hora
             </a>
           </div>
+          <!-- Botón hamburguesa (solo móvil) -->
+          <div class="flex justify-end md:hidden">
+            <label for="menu-movil" class="cursor-pointer border border-foreground px-3 py-2 text-xs font-bold uppercase tracking-meta" aria-label="Abrir menú">
+              ☰ Menú
+            </label>
+          </div>
         </div>
-        <!-- Nav de secciones -->
+        <!-- Nav de secciones (solo escritorio) -->
         <nav
-          class="flex flex-wrap items-center justify-between gap-4 border-t border-border py-4"
+          class="hidden flex-wrap items-center justify-between gap-4 border-t border-border py-4 md:flex"
           aria-label="Secciones"
         >
           <div class="flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium">
@@ -108,6 +114,43 @@ const activa = (seccion: string) =>
             />
           </form>
         </nav>
+
+        <!-- Drawer móvil: checkbox puro, sin JS -->
+        <input type="checkbox" id="menu-movil" class="peer hidden" />
+        <label for="menu-movil" class="fixed inset-0 z-40 hidden bg-black/50 peer-checked:block md:hidden" aria-label="Cerrar menú"></label>
+        <aside class="fixed right-0 top-0 z-50 flex h-full w-72 max-w-[85vw] translate-x-full flex-col gap-2 overflow-y-auto bg-card p-6 transition-transform duration-300 peer-checked:translate-x-0 md:hidden" aria-label="Menú móvil">
+          <div class="mb-2 flex items-center justify-between">
+            <span class="font-serif text-lg font-bold">LA CORRIENTE</span>
+            <label for="menu-movil" class="cursor-pointer border border-border px-2 py-1 text-xs" aria-label="Cerrar menú">✕</label>
+          </div>
+          <a
+            href="/ultima-hora"
+            class={`border px-3 py-2 text-center text-xs font-bold uppercase tracking-meta ${
+              activa("ultima-hora")
+                ? "border-foreground bg-foreground text-background"
+                : "border-foreground"
+            }`}
+          >
+            ⚡ Última hora
+          </a>
+          <form action="/busqueda" method="get" class="mt-2 flex items-center gap-2 border-b border-border pb-1 text-sm text-muted-foreground">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" name="q" placeholder="Buscar historias" class="w-full bg-transparent outline-none placeholder:text-muted-foreground/70" />
+          </form>
+          <nav class="mt-2 flex flex-col" aria-label="Secciones móvil">
+            {
+              SECCIONES.map(([slug, nombre]) => (
+                <a
+                  href={`/${slug}`}
+                  aria-current={activa(slug) ? "page" : undefined}
+                  class={`border-b border-border py-3 text-sm transition hover:text-primary ${activa(slug) ? "font-bold text-primary" : ""}`}
+                >
+                  {nombre}
+                </a>
+              ))
+            }
+          </nav>
+        </aside>
       </header>
 
       <!-- Contenido de cada página -->
