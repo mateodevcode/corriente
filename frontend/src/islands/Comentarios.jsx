@@ -140,6 +140,10 @@ export default function Comentarios({ articuloId }) {
           value={credenciales.email}
           onChange={cambiarCredencial('email')}
           required
+          autoComplete="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           placeholder="tu@email.com"
           className="border border-border bg-background p-2 text-sm outline-none focus:border-primary"
         />
@@ -149,6 +153,10 @@ export default function Comentarios({ articuloId }) {
           onChange={cambiarCredencial('password')}
           required
           minLength={8}
+          autoComplete={modoSesion === 'registro' ? 'new-password' : 'current-password'}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
           placeholder="Contraseña (mín. 8 caracteres)"
           className="border border-border bg-background p-2 text-sm outline-none focus:border-primary"
         />

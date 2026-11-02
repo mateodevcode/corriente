@@ -3,6 +3,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -19,7 +20,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login", response_model=Token)
 def login(datos: UserLogin, db: Session = Depends(get_db)):
     """Autentica un usuario y devuelve un JWT con sus datos."""
-    user = db.query(User).filter(User.email == datos.email).first()
+    # El email se compara sin distinguir mayúsculas/espacios (móviles suelen
+    # autocapitalizar la primera letra y eso rompía el login).
+    email = datos.email.strip().lower()
+    user = db.query(User).filter(func.lower(User.email) == email).first()
     if user is None or not verify_password(datos.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -37,13 +41,14 @@ def login(datos: UserLogin, db: Session = Depends(get_db)):
 @router.post("/registro", response_model=Token, status_code=201)
 def registro(datos: RegistroLector, db: Session = Depends(get_db)):
     """Registro público de lectores del sitio: siempre rol 'lector'."""
-    if db.query(User).filter(User.email == datos.email).first():
+    email = datos.email.strip().lower()
+    if db.query(User).filter(func.lower(User.email) == email).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="El email ya está registrado",
         )
     user = User(
-        email=datos.email,
+        email=email,
         nombre=datos.nombre,
         rol="lector",
         password_hash=hash_password(datos.password),
@@ -57,12 +62,12 @@ def registro(datos: RegistroLector, db: Session = Depends(get_db)):
     # Falla silenciosa: la cuenta se crea igual, la suscripción puede reintentarse.
     if datos.suscribirse:
         try:
-            registrar_suscripcion(db, datos.email)
-            _enviar_gracias(db, datos.email)
+            registrar_suscripcion(db, email)
+            _enviar_gracias(db, email)
         except Exception:
             logger.exception(
                 "Cuenta creada, pero falló la suscripción al newsletter de %s",
-                datos.email,
+                email,
             )
 
     return Token(

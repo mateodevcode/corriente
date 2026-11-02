@@ -1,6 +1,7 @@
 # === Router: users (gestión de usuarios y roles — solo admin) ===
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -34,10 +35,11 @@ def crear_usuario(
     _: User = Depends(require_role("admin")),  # Solo el admin crea usuarios
 ):
     """Crea un usuario nuevo con rol (solo admin)."""
-    if db.query(User).filter(User.email == datos.email).first():
+    email = datos.email.strip().lower()
+    if db.query(User).filter(func.lower(User.email) == email).first():
         raise HTTPException(status_code=400, detail="El email ya está registrado")
     user = User(
-        email=datos.email,
+        email=email,
         nombre=datos.nombre,
         rol=datos.rol,
         password_hash=hash_password(datos.password),

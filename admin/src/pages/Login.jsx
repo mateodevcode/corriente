@@ -49,6 +49,10 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoComplete="email"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             className="w-full border-b-2 border-border bg-transparent pb-2 text-sm outline-none focus:border-primary"
             placeholder="tu@corriente.com"
           />
@@ -62,6 +66,10 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            autoComplete="current-password"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             className="w-full border-b-2 border-border bg-transparent pb-2 text-sm outline-none focus:border-primary"
             placeholder="••••••••"
           />
