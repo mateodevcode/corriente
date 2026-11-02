@@ -23,14 +23,14 @@ export default function ImagenBlock({ block, onChange, tituloSlug }) {
 
   return (
     <div className="border border-border bg-card p-3">
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         {preview ? (
-          <div className="relative">
-            <img src={preview} alt={d.alt || ''} className="h-32 w-48 object-cover" />
+          <div className="relative w-full sm:w-48">
+            <img src={preview} alt={d.alt || ''} className="h-32 w-full object-cover sm:w-48" />
             {d._file && <span className="absolute bottom-1 left-1 bg-black/60 px-1.5 py-0.5 text-[10px] uppercase text-white">Previa — se sube al guardar</span>}
           </div>
         ) : (
-          <label className="flex h-32 w-48 cursor-pointer items-center justify-center border border-dashed border-border text-xs text-muted-foreground hover:border-primary">
+          <label className="flex h-32 w-full cursor-pointer items-center justify-center border border-dashed border-border text-xs text-muted-foreground hover:border-primary sm:w-48">
             <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
               onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
             Subir imagen

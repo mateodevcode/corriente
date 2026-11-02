@@ -54,15 +54,15 @@ export default function CategoriasPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Estructura</p>
-      <h1 className="mt-2 font-serif text-3xl font-bold tracking-[-0.04em]">Secciones</h1>
+      <h1 className="mt-2 font-serif text-2xl sm:text-3xl font-bold tracking-[-0.04em]">Secciones</h1>
 
       {error && <p className="mt-4 text-sm text-primary">{error}</p>}
 
       {/* Formulario de creación */}
       <form onSubmit={crear} className="mt-6 flex max-w-xl flex-wrap items-end gap-4">
-        <label className="min-w-52 flex-1">
+        <label className="w-full flex-1 sm:min-w-52">
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Nueva sección
           </span>
@@ -83,7 +83,7 @@ export default function CategoriasPage() {
       {/* Lista: hairlines entre filas, marca las principales */}
       <div className="mt-8 max-w-2xl border border-border bg-border [&>*+*]:border-t">
         {categorias.map((c) => (
-          <div key={c.id} className="flex items-center justify-between gap-4 bg-card px-4 py-3">
+          <div key={c.id} className="flex flex-col items-start gap-3 bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div>
               <p className="text-sm font-bold">
                 {c.nombre}
@@ -95,7 +95,7 @@ export default function CategoriasPage() {
               </p>
               <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">/{c.slug}</p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-wrap gap-4">
               <button onClick={() => alternarPrincipal(c)}
                 className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground hover:text-primary">
                 {c.es_principal ? 'Quitar principal' : 'Hacer principal'}

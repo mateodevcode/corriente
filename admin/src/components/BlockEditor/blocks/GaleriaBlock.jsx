@@ -39,7 +39,7 @@ export default function GaleriaBlock({ block, onChange }) {
         {total >= 6 ? 'Máximo 6 fotos' : 'Click para subir fotos (máx 6)'}
       </label>
       {(!!subidas.length || !!locales.length) && (
-        <div className="grid grid-cols-3 gap-1">
+        <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
           {subidas.map((u, i) => (
             <div key={`s${i}`} className="relative">
               <img src={u} alt="" className="h-16 w-full object-cover" loading="lazy" />

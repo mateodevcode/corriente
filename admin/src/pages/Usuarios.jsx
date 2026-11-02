@@ -54,14 +54,14 @@ export default function UsuariosPage() {
     'w-full border-b-2 border-border bg-transparent pb-2 text-sm outline-none focus:border-primary'
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Equipo</p>
-      <h1 className="mt-2 font-serif text-3xl font-bold tracking-[-0.04em]">Usuarios y roles</h1>
+      <h1 className="mt-2 font-serif text-2xl sm:text-3xl font-bold tracking-[-0.04em]">Usuarios y roles</h1>
 
       {error && <p className="mt-4 text-sm text-primary">{error}</p>}
 
       {/* Alta de usuario */}
-      <form onSubmit={crear} className="mt-6 grid max-w-2xl gap-6 sm:grid-cols-4">
+      <form onSubmit={crear} className="mt-6 grid max-w-2xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <label>
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Email</span>
           <input type="email" required value={nuevo.email}
@@ -95,7 +95,7 @@ export default function UsuariosPage() {
       {/* Lista de usuarios */}
       <div className="mt-8 max-w-2xl border border-border bg-border [&>*+*]:border-t">
         {usuarios.map((u) => (
-          <div key={u.id} className="flex items-center justify-between gap-4 bg-card px-4 py-3">
+          <div key={u.id} className="flex flex-col items-start gap-3 bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="min-w-0">
               <p className="truncate text-sm font-bold">
                 {u.nombre}
@@ -103,7 +103,7 @@ export default function UsuariosPage() {
               </p>
               <p className="truncate text-xs text-muted-foreground">{u.email}</p>
             </div>
-            <div className="flex shrink-0 items-center gap-3">
+            <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
               {/* Cambio de rol directo */}
               <select value={u.rol} onChange={(e) => cambiarRol(u, e.target.value)}
                 className="border border-border bg-background px-2 py-1 text-xs outline-none">

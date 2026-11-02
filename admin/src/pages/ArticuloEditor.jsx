@@ -180,33 +180,33 @@ export default function ArticuloEditor() {
   const inputClase = 'w-full border-b-2 border-border bg-transparent pb-2 text-sm outline-none focus:border-primary'
 
   return (
-    <form onSubmit={guardar} className="mx-auto max-w-4xl p-8">
+    <form onSubmit={guardar} className="mx-auto max-w-4xl p-4 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">{id ? 'Editando' : 'Nuevo artículo'}</p>
       {error && <p className="mt-4 border-l-2 border-primary bg-muted px-4 py-3 text-sm text-primary">{error}</p>}
 
       <input value={form.titulo} onChange={e=>onTitulo(e.target.value)} required
         placeholder="Titular del artículo"
-        className="mt-4 w-full font-serif text-3xl font-bold tracking-[-0.03em] outline-none placeholder:text-muted-foreground" />
+        className="mt-4 w-full font-serif text-2xl font-bold tracking-[-0.03em] outline-none placeholder:text-muted-foreground sm:text-3xl" />
 
       <div className="mt-6 grid gap-6 sm:grid-cols-3">
-        <label className="block">
+        <label className="block min-w-0">
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Slug (URL)</span>
           <input value={form.slug} onChange={e=>onSlugChange(e.target.value)} required className={inputClase} placeholder="titulo-en-url" />
         </label>
-        <label className="block">
+        <label className="block min-w-0">
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Estado</span>
           <select value={form.estado} onChange={e=>setCampo('estado', e.target.value)} className="w-full border border-border bg-card px-2 py-2 text-sm outline-none">
             {ESTADOS.map(s=> <option key={s.valor} value={s.valor}>{s.label}</option>)}
           </select>
         </label>
-        <label className="block">
+        <label className="block min-w-0">
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Fecha de publicación</span>
           <input type="date" value={form.fecha_publicacion} onChange={e=>setCampo('fecha_publicacion', e.target.value)} className={inputClase} />
         </label>
       </div>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
-        <label className="block">
+        <label className="block min-w-0">
           <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Sección</span>
           <select value={form.category_id} onChange={e=>setCampo('category_id', e.target.value)} required
             className="w-full border border-border bg-card px-2 py-2 text-sm outline-none">
@@ -235,9 +235,9 @@ export default function ArticuloEditor() {
       <div className="mt-8">
         <span className="mb-2 block text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">Imagen de portada — se sube al guardar</span>
         {(form.imagen_portada_url || portadaLocal) ? (
-          <div className="flex items-start gap-4">
-            <div className="relative">
-              <img src={form.imagen_portada_url || portadaLocal} alt="Portada" className="aspect-[3/2] w-64 object-cover" />
+          <div className="flex flex-col items-start gap-4 sm:flex-row">
+            <div className="relative w-full sm:w-64">
+              <img src={form.imagen_portada_url || portadaLocal} alt="Portada" className="aspect-[3/2] w-full object-cover" />
               {portadaFile && <span className="absolute bottom-1 left-1 bg-black/60 px-1.5 py-0.5 text-[10px] uppercase text-white">Previa — se sube al guardar</span>}
             </div>
             <div className="grid gap-2">
@@ -249,7 +249,7 @@ export default function ArticuloEditor() {
             </div>
           </div>
         ) : (
-          <label className="flex h-40 w-64 cursor-pointer items-center justify-center border border-dashed border-border text-sm text-muted-foreground hover:border-primary">
+          <label className="flex h-40 w-full max-w-64 cursor-pointer items-center justify-center border border-dashed border-border text-sm text-muted-foreground hover:border-primary">
             <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
               onChange={e=> e.target.files[0] && onPortada(e.target.files[0])} />
             Subir portada

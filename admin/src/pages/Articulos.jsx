@@ -50,15 +50,15 @@ export default function ArticulosPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-end justify-between gap-4">
+    <div className="p-4 sm:p-8">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Editorial</p>
-          <h1 className="mt-2 font-serif text-3xl font-bold tracking-[-0.04em]">Artículos</h1>
+          <h1 className="mt-2 font-serif text-2xl sm:text-3xl font-bold tracking-[-0.04em]">Artículos</h1>
         </div>
         <Link
           to="/articulos/nuevo"
-          className="border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition hover:bg-foreground hover:text-background"
+          className="w-full border border-foreground px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.12em] transition hover:bg-foreground hover:text-background sm:w-auto"
         >
           + Nuevo artículo
         </Link>
@@ -69,7 +69,7 @@ export default function ArticulosPage() {
         <select
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
-          className="border border-border bg-card px-3 py-2 text-sm outline-none"
+          className="w-full border border-border bg-card px-3 py-2 text-sm outline-none sm:w-auto"
         >
           <option value="">Todos los estados</option>
           {Object.entries(ETIQUETAS).map(([valor, label]) => (
@@ -80,7 +80,7 @@ export default function ArticulosPage() {
           value={buscar}
           onChange={(e) => setBuscar(e.target.value)}
           placeholder="Buscar por título…"
-          className="border-b-2 border-border bg-transparent px-1 py-2 text-sm outline-none focus:border-primary"
+          className="w-full border-b-2 border-border bg-transparent px-1 py-2 text-sm outline-none focus:border-primary sm:w-auto"
         />
       </div>
 
@@ -89,14 +89,14 @@ export default function ArticulosPage() {
       {/* Tabla: filas separadas por hairlines, como el prototipo */}
       <div className="mt-6 border border-border bg-border [&>*+*]:border-t">
         {articulos.map((a) => (
-          <div key={a.id} className="flex items-center justify-between gap-4 bg-card px-4 py-3">
+          <div key={a.id} className="flex flex-col items-start gap-3 bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="min-w-0">
               <p className="truncate text-sm font-bold">{a.titulo}</p>
               <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                 {a.autor?.nombre_publico || `#${a.author_id}`} · {a.categoria?.nombre || `#${a.category_id}`}
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3 sm:shrink-0 sm:justify-end">
               <span
                 className={`px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] ${
                   a.estado === 'publicado'

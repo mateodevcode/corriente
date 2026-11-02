@@ -30,11 +30,11 @@ function SortableItem({ block, index, total, onDuplicate, onDelete, onMove, chil
   const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
   return (
     <div ref={setNodeRef} style={style} className={`group relative rounded border ${isDragging ? 'border-primary shadow-lg' : 'border-transparent hover:border-border'} bg-card/50 p-1`}>
-      <div className="mb-1 flex items-center gap-1">
+      <div className="mb-1 flex flex-wrap items-center gap-1">
         <button type="button" {...attributes} {...listeners} title="Arrastra para reordenar"
           className="cursor-grab rounded border border-border bg-muted px-2 py-0.5 text-xs hover:bg-primary hover:text-white active:cursor-grabbing">⋮⋮ arrastra</button>
         <span className="text-[10px] uppercase tracking-widest text-muted-foreground">#{index + 1} · {block.tipo}</span>
-        <span className="ml-auto flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="ml-auto flex gap-1 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
           <button type="button" disabled={index===0} onClick={()=>onMove(index,-1)} title="Subir" className="border border-border bg-card px-1.5 text-xs disabled:opacity-30">↑</button>
           <button type="button" disabled={index===total-1} onClick={()=>onMove(index,1)} title="Bajar" className="border border-border bg-card px-1.5 text-xs disabled:opacity-30">↓</button>
           <button type="button" onClick={onDuplicate} title="Duplicar" className="border border-border bg-card px-1.5 text-xs">⧉</button>

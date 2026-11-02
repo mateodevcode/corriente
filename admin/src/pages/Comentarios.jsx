@@ -37,12 +37,12 @@ export default function ComentariosPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Comunidad</p>
-      <h1 className="mt-2 font-serif text-3xl font-bold tracking-[-0.04em]">Moderación de comentarios</h1>
+      <h1 className="mt-2 font-serif text-2xl sm:text-3xl font-bold tracking-[-0.04em]">Moderación de comentarios</h1>
 
       {/* Filtro por estado */}
-      <div className="mt-6 flex gap-3">
+      <div className="mt-6 flex flex-wrap gap-3">
         {['pendiente', 'aprobado', 'rechazado', ''].map((valor) => (
           <button
             key={valor || 'todos'}
@@ -64,7 +64,7 @@ export default function ComentariosPage() {
       <div className="mt-6 border border-border bg-border [&>*+*]:border-t">
         {comentarios.map((c) => (
           <div key={c.id} className="bg-card p-4">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs font-bold uppercase tracking-[0.12em]">
                 {c.usuario_nombre || c.user_id}
                 <span className="ml-2 font-normal text-muted-foreground">
@@ -85,7 +85,7 @@ export default function ComentariosPage() {
               </span>
             </div>
             <p className="mt-3 text-sm leading-relaxed">{c.contenido}</p>
-            <div className="mt-4 flex gap-4">
+            <div className="mt-4 flex flex-wrap gap-4">
               {c.estado_moderacion !== 'aprobado' && (
                 <button onClick={() => moderar(c.id, 'aprobado')}
                   className="text-xs font-bold uppercase tracking-[0.12em] text-primary hover:underline">

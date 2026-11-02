@@ -23,10 +23,10 @@ export default function Dashboard() {
   const esEscritor = user?.rol === 'escritor'
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       {/* Cabecera de sección: kicker + título serif (lenguaje del periódico) */}
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Panel</p>
-      <h1 className="mt-2 font-serif text-3xl font-bold tracking-[-0.04em]">
+      <h1 className="mt-2 font-serif text-2xl sm:text-3xl font-bold tracking-[-0.04em]">
         {esEscritor ? 'Mi Dashboard' : 'Dashboard'}
       </h1>
 

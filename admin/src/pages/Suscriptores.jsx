@@ -27,10 +27,10 @@ export default function SuscriptoresPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">La carta de Corriente</p>
-      <div className="mt-2 flex items-end justify-between gap-4">
-        <h1 className="font-serif text-3xl font-bold tracking-[-0.04em]">Suscriptores</h1>
+      <div className="mt-2 flex flex-col items-start gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-[-0.04em]">Suscriptores</h1>
         {preview && (
           <button
             onClick={() => setVerPreview((v) => !v)}
@@ -67,9 +67,9 @@ export default function SuscriptoresPage() {
           </p>
         ) : (
           suscriptores.map((s) => (
-            <div key={s.id} className="flex items-center justify-between gap-4 bg-card p-4">
+            <div key={s.id} className="flex flex-col items-start gap-3 bg-card p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
               <p className="truncate text-sm font-semibold">{s.email}</p>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <span className="text-xs text-muted-foreground">
                   {s.fecha?.slice(0, 16).replace('T', ' ')}
                 </span>
