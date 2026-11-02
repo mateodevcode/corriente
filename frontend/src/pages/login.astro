@@ -1,0 +1,7 @@
+---
+// === /login: puerta corta al panel ===
+// El login real vive en la SPA del panel (React Router bajo /admin).
+// Esta ruta evita que /login caiga en la ruta dinámica [seccion] y muestre
+// "Sección no encontrada".
+return Astro.redirect('/admin/login', 302)
+---

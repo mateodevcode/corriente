@@ -16,7 +16,12 @@ export default function LoginPage() {
     setError('')
     setCargando(true)
     try {
-      await login(email, password)
+      const usuario = await login(email, password)
+      // Un lector no entra al panel: vuelve al sitio público con la sesión intacta
+      if (usuario?.rol === 'lector') {
+        window.location.replace('/')
+        return
+      }
       navigate('/')
     } catch (err) {
       setError(err.message || 'Error de autenticación')

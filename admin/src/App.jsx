@@ -1,4 +1,5 @@
 // Rutas del panel: protegidas por autenticación y rol
+import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import LoginPage from './pages/Login.jsx'
@@ -11,26 +12,33 @@ import CategoriasPage from './pages/Categorias.jsx'
 import UsuariosPage from './pages/Usuarios.jsx'
 import SuscriptoresPage from './pages/Suscriptores.jsx'
 
+// Roles con acceso al panel editorial (un lector nunca entra)
+const ROLES_PANEL = ['admin', 'editor', 'escritor']
+const esPersonal = (user) => Boolean(user && ROLES_PANEL.includes(user.rol))
+
+// Manda al inicio público: el lector solo puede comentar en el sitio
+function InicioPublico() {
+  useEffect(() => {
+    window.location.replace('/')
+  }, [])
+  return <div className="p-10 text-sm text-muted-foreground">Redirigiendo al inicio…</div>
+}
+
+// Envoltorio del login: con sesión activa, staff va al panel y lector al inicio
+function LoginRuta({ children }) {
+  const { user, cargando } = useAuth()
+  if (cargando) return <div className="p-10 text-sm text-muted-foreground">Cargando…</div>
+  if (!user) return children
+  if (!esPersonal(user)) return <InicioPublico />
+  return <Navigate to="/" replace />
+}
+
 // Envoltorio: exige sesión iniciada y rol del panel (lector no entra)
 function Protegido({ children }) {
-  const { user, cargando, logout } = useAuth()
+  const { user, cargando } = useAuth()
   if (cargando) return <div className="p-10 text-sm text-muted-foreground">Cargando…</div>
   if (!user) return <Navigate to="/login" replace />
-  if (user.rol === 'lector') {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-5 text-center">
-        <p className="text-sm font-bold text-primary">
-          Esta cuenta es de lector: solo puede comentar en el sitio público.
-        </p>
-        <button
-          onClick={logout}
-          className="border border-foreground px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition hover:bg-foreground hover:text-background"
-        >
-          Cerrar sesión
-        </button>
-      </div>
-    )
-  }
+  if (!esPersonal(user)) return <InicioPublico />
   return children
 }
 
@@ -46,7 +54,14 @@ function PorRol({ roles, children }) {
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/login"
+        element={
+          <LoginRuta>
+            <LoginPage />
+          </LoginRuta>
+        }
+      />
       <Route
         path="/"
         element={

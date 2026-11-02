@@ -13,10 +13,11 @@ async function request(metodo, ruta, cuerpo = null, esFormData = false) {
     body: cuerpo ? (esFormData ? cuerpo : JSON.stringify(cuerpo)) : null,
   })
 
-  // Token inválido/expirado: limpiar sesión
+  // Token inválido/expirado: limpiar sesión y volver al login del panel
+  // (BASE_URL es '/admin/' en producción y '/' en desarrollo)
   if (res.status === 401) {
     localStorage.removeItem('corriente_token')
-    window.location.href = '/login'
+    window.location.href = `${import.meta.env.BASE_URL}login`
   }
 
   if (!res.ok) {
