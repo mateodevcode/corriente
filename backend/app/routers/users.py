@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.deps import get_current_user, require_role
 from app.core.security import hash_password
-from app.models import User
+from app.models import Author, User
 from app.schemas import UserCreate, UserOut, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -47,6 +47,10 @@ def crear_usuario(
     db.add(user)
     db.commit()
     db.refresh(user)
+    # Todo el personal editorial firma sus artículos con un perfil de autor
+    if user.rol != "lector":
+        db.add(Author(nombre_publico=user.nombre, user_id=user.id))
+        db.commit()
     return user
 
 

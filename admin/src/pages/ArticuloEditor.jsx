@@ -165,7 +165,7 @@ export default function ArticuloEditor() {
       imagen_portada_url: portadaUrl,
       contenido: undefined, // derivado del servidor
       contenido_bloques: bloquesLimpios,
-      author_id: Number(form.author_id) || 1,
+      author_id: form.author_id ? Number(form.author_id) : undefined,
       category_id: Number(form.category_id),
       fecha_publicacion: fechaISO,
       tags: tagsTexto.split(',').map(t=>t.trim()).filter(Boolean),

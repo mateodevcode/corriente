@@ -72,7 +72,8 @@ class ArticleBase(BaseModel):
     estado: str = Field(default="borrador", pattern="^(borrador|en_revision|publicado|programado)$")
     es_portada: bool = False                # Solo un artículo es portada a la vez
     fecha_publicacion: datetime | None = None
-    author_id: int
+    # Opcional al crear: el servidor lo resuelve desde el usuario autenticado
+    author_id: int | None = None
     category_id: int
     tags: list[str] = []                    # Nombres de etiquetas (se resuelven a slug)
 
