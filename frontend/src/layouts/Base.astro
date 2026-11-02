@@ -4,6 +4,7 @@
 // header con fecha + logo serif + Suscríbete, nav de secciones, footer hairline.
 
 import "../styles/global.css";
+import CuentaMenu from "../islands/CuentaMenu.jsx";
 
 const {
   titulo = "Corriente — Periódico digital",
@@ -123,6 +124,8 @@ const activa = (seccion: string) =>
             <span class="font-serif text-lg font-bold">LA CORRIENTE</span>
             <label for="menu-movil" class="cursor-pointer border border-border px-2 py-1 text-xs" aria-label="Cerrar menú">✕</label>
           </div>
+          <!-- Cuenta: login o datos del usuario con acceso al panel -->
+          <CuentaMenu client:load />
           <a
             href="/ultima-hora"
             class={`border px-3 py-2 text-center text-xs font-bold uppercase tracking-meta ${

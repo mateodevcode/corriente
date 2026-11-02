@@ -84,6 +84,7 @@ export default function Comentarios({ articuloId }) {
       guardarSesion(nueva)
       setSesion(nueva)
       setModoSesion(null)
+      window.dispatchEvent(new Event('corriente-sesion-cambiada'))
     } catch (err) {
       setErrorSesion(err.message || 'No se pudo iniciar sesión')
     } finally {
@@ -95,6 +96,7 @@ export default function Comentarios({ articuloId }) {
     cerrarSesion()
     setSesion(null)
     setModoSesion(null)
+    window.dispatchEvent(new Event('corriente-sesion-cambiada'))
   }
 
   const publicar = async (e) => {
