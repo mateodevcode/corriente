@@ -36,11 +36,18 @@ const url = urlArticulo(articulo)
     {articulo.resumen && (
       <p class="mt-3 text-sm leading-6 text-muted-foreground">{articulo.resumen}</p>
     )}
-    <div class="mt-5 flex items-center justify-between text-[11px] uppercase tracking-meta text-muted-foreground">
-      <a href={`/autor/${slugAutor(articulo.autor?.nombre_publico)}`} class="hover:text-primary">
-        {articulo.autor?.nombre_publico || 'Redacción'}
-      </a>
-      <span>{tiempoLectura(articulo.contenido)} · {fechaCorta(articulo.fecha_publicacion)}</span>
+    <div class="mt-5 flex items-end justify-between gap-3 text-[11px] uppercase tracking-meta text-muted-foreground">
+      <div class="min-w-0">
+        <a href={`/autor/${slugAutor(articulo.autor?.nombre_publico)}`} class="hover:text-primary">
+          {articulo.autor?.nombre_publico || 'Redacción'}
+        </a>
+        {articulo.autor?.profesion && (
+          <p class="mt-1 truncate text-[10px] normal-case tracking-normal text-muted-foreground">
+            {articulo.autor.profesion}
+          </p>
+        )}
+      </div>
+      <span class="shrink-0">{tiempoLectura(articulo.contenido)} · {fechaCorta(articulo.fecha_publicacion)}</span>
     </div>
   </div>
 </article>

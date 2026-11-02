@@ -50,10 +50,15 @@ const secundarios = articulos.filter((a) => a !== destacado).slice(0, 3)
               {destacado.resumen}
             </p>
           )}
-          <div class="mt-6 flex items-center gap-4 text-xs uppercase tracking-meta text-muted-foreground">
-            <span>Por {destacado.autor?.nombre_publico || 'Redacción'}</span>
-            <span class="size-1 rounded-full bg-primary"></span>
-            <span>{tiempoLectura(destacado.contenido)} de lectura</span>
+          <div class="mt-6 text-xs uppercase tracking-meta text-muted-foreground">
+            <div class="flex items-center gap-4">
+              <span>Por {destacado.autor?.nombre_publico || 'Redacción'}</span>
+              <span class="size-1 rounded-full bg-primary"></span>
+              <span>{tiempoLectura(destacado.contenido)} de lectura</span>
+            </div>
+            {destacado.autor?.profesion && (
+              <p class="mt-1 text-[11px] normal-case tracking-normal">{destacado.autor.profesion}</p>
+            )}
           </div>
         </div>
       </article>

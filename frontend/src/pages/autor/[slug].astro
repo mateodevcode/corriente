@@ -26,6 +26,9 @@ const autor = articulos[0]?.autor
         <h1 class="font-serif text-4xl font-bold tracking-[-0.04em] sm:text-5xl">
           {autor?.nombre_publico || 'Autor'}
         </h1>
+        {autor?.profesion && (
+          <p class="mt-2 text-xs font-bold uppercase tracking-meta text-primary">{autor.profesion}</p>
+        )}
         {autor?.bio && <p class="mt-3 max-w-2xl text-muted-foreground">{autor.bio}</p>}
       </div>
     </div>

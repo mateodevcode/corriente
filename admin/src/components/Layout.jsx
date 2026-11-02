@@ -11,6 +11,7 @@ const MENU = [
   { to: '/suscriptores', label: 'Suscriptores', roles: ['admin', 'editor'] },
   { to: '/categorias', label: 'Secciones', roles: ['admin', 'editor'] },
   { to: '/usuarios', label: 'Usuarios', roles: ['admin'] },
+  { to: '/perfil', label: 'Mi perfil', roles: ['admin', 'editor', 'escritor'] },
 ]
 
 export default function Layout() {

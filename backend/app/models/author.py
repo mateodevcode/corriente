@@ -13,6 +13,7 @@ class Author(Base):
     # FK opcional: un autor puede existir sin cuenta de usuario (colaborador externo)
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     nombre_publico: Mapped[str] = mapped_column(String(150), index=True)
+    profesion: Mapped[str | None] = mapped_column(String(150))
     bio: Mapped[str | None] = mapped_column(Text)
     foto_url: Mapped[str | None] = mapped_column(String(500))
 

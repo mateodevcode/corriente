@@ -118,8 +118,11 @@ const imagen = pagina?.imagen_portada_url || `${site}/placeholder-social.jpg`
             <a href={`/autor/${slugAutor(pagina.autor?.nombre_publico)}`} class="text-sm font-bold hover:text-primary">
               {pagina.autor?.nombre_publico || 'Redacción Corriente'}
             </a>
+            {pagina.autor?.profesion && (
+              <p class="text-xs uppercase tracking-meta text-muted-foreground">{pagina.autor.profesion}</p>
+            )}
             {pagina.autor?.bio && (
-              <p class="text-xs uppercase tracking-meta text-muted-foreground">{pagina.autor.bio}</p>
+              <p class="mt-0.5 text-xs text-muted-foreground">{pagina.autor.bio}</p>
             )}
           </div>
           <span class="ml-auto text-xs uppercase tracking-meta text-muted-foreground">{fechaLarga(pagina.fecha_publicacion)}</span>

@@ -161,6 +161,7 @@ class AuthorNested(BaseModel):
     id: int
     nombre_publico: str
     foto_url: str | None
+    profesion: str | None = None
     bio: str | None = None # cargo/línea del autor bajo la portada
 
 

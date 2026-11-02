@@ -20,6 +20,7 @@ from app.schemas import (
     ArticleCreate, ArticleOut, ArticleListOut, ArticleUpdate,
 )
 from app.utils.bloques import bloques_a_html
+from app.utils.autores import autor_de_usuario
 from app.utils.slugs import slugify
 
 logger = logging.getLogger("corriente.articles")
@@ -42,17 +43,6 @@ def _resolver_tags(db: Session, nombres: list[str]) -> list[Tag]:
             db.add(tag)
         tags.append(tag)
     return tags
-
-
-def _autor_de_usuario(db: Session, user: User) -> Author:
-    """Devuelve el perfil de autor del usuario; lo crea si aún no existe."""
-    autor = db.query(Author).filter(Author.user_id == user.id).first()
-    if autor is None:
-        autor = Author(user_id=user.id, nombre_publico=user.nombre)
-        db.add(autor)
-        db.commit()
-        db.refresh(autor)
-    return autor
 
 
 def _aplicar_bloques(article: Article, bloques: list | None) -> None:
@@ -307,7 +297,7 @@ def crear(
     # Autoría: admin puede asignar un autor existente; el resto firma con su perfil.
     author_id = datos.author_id
     if user.rol != "admin" or author_id is None or db.get(Author, author_id) is None:
-        author_id = _autor_de_usuario(db, user).id
+        author_id = autor_de_usuario(db, user).id
     # Publicado debe ser visible de inmediato: si no trae fecha o es futura, fijar a ahora
     fecha_pub = datos.fecha_publicacion
     if datos.estado == "publicado" and (fecha_pub is None or fecha_pub > datetime.now(timezone.utc)):

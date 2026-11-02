@@ -8,15 +8,65 @@ from app.core.database import get_db
 from app.core.deps import get_current_user, require_role
 from app.core.security import hash_password
 from app.models import Author, User
-from app.schemas import UserCreate, UserOut, UserUpdate
+from app.schemas import (
+    PerfilOut, PerfilUpdate, UserCreate, UserOut, UserUpdate,
+)
+from app.utils.autores import autor_de_usuario
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+ROLES_PANEL = ("admin", "editor", "escritor")
+
+
+def _perfil_out(user: User, autor: Author) -> PerfilOut:
+    return PerfilOut(
+        id=user.id,
+        email=user.email,
+        nombre=user.nombre,
+        rol=user.rol,
+        fecha_registro=user.fecha_registro,
+        profesion=autor.profesion,
+        bio=autor.bio,
+        foto_url=autor.foto_url,
+    )
 
 
 @router.get("/me", response_model=UserOut)
 def quien_soy(user: User = Depends(get_current_user)):
     """Devuelve el usuario autenticado actual (para el panel)."""
     return user
+
+
+@router.get("/me/perfil", response_model=PerfilOut)
+def mi_perfil(
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role(*ROLES_PANEL)),
+):
+    """Datos de la cuenta y del perfil público del usuario autenticado."""
+    return _perfil_out(user, autor_de_usuario(db, user))
+
+
+@router.patch("/me/perfil", response_model=PerfilOut)
+def actualizar_mi_perfil(
+    datos: PerfilUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(require_role(*ROLES_PANEL)),
+):
+    """Cada usuario del panel edita sus propios datos (sin cambiar email ni rol)."""
+    autor = autor_de_usuario(db, user)
+    cambios = datos.model_dump(exclude_unset=True)
+    if "nombre" in cambios:
+        user.nombre = cambios["nombre"]
+        autor.nombre_publico = cambios["nombre"]
+    if "password" in cambios:
+        user.password_hash = hash_password(cambios["password"])
+    for campo in ("profesion", "bio", "foto_url"):
+        if campo in cambios:
+            setattr(autor, campo, cambios[campo])
+    db.commit()
+    db.refresh(user)
+    db.refresh(autor)
+    return _perfil_out(user, autor)
 
 
 @router.get("", response_model=list[UserOut])

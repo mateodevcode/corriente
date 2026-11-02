@@ -34,6 +34,27 @@ class UserUpdate(BaseModel):
     password: str | None = Field(default=None, min_length=8, max_length=128)
 
 
+class PerfilUpdate(BaseModel):
+    """Datos que un usuario del panel puede editar de su propio perfil."""
+    nombre: str | None = Field(default=None, min_length=2, max_length=120)
+    password: str | None = Field(default=None, min_length=8, max_length=128)
+    profesion: str | None = Field(default=None, max_length=150)
+    bio: str | None = None
+    foto_url: str | None = None
+
+
+class PerfilOut(BaseModel):
+    """Perfil propio: cuenta + datos públicos del autor."""
+    id: int
+    email: EmailStr
+    nombre: str
+    rol: str
+    fecha_registro: datetime
+    profesion: str | None = None
+    bio: str | None = None
+    foto_url: str | None = None
+
+
 class UserLogin(BaseModel):
     email: EmailStr
     password: str

@@ -34,11 +34,21 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
+  // Refresca los datos del usuario (p. ej. tras editar Mi perfil)
+  const refrescar = async () => {
+    try {
+      const res = await api.get('/users/me')
+      setUser(res.data)
+    } catch {
+      /* si falla, mantenemos los datos actuales */
+    }
+  }
+
   // Roles con jerarquía: admin > editor > escritor
   const tieneRol = (...roles) => user && roles.includes(user.rol)
 
   return (
-    <AuthContext.Provider value={{ user, cargando, login, logout, tieneRol }}>
+    <AuthContext.Provider value={{ user, cargando, login, logout, refrescar, tieneRol }}>
       {children}
     </AuthContext.Provider>
   )

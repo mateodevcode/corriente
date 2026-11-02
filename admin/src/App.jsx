@@ -11,6 +11,7 @@ import ComentariosPage from './pages/Comentarios.jsx'
 import CategoriasPage from './pages/Categorias.jsx'
 import UsuariosPage from './pages/Usuarios.jsx'
 import SuscriptoresPage from './pages/Suscriptores.jsx'
+import PerfilPage from './pages/Perfil.jsx'
 
 // Roles con acceso al panel editorial (un lector nunca entra)
 const ROLES_PANEL = ['admin', 'editor', 'escritor']
@@ -131,6 +132,14 @@ export default function App() {
           element={
             <PorRol roles={['admin']}>
               <UsuariosPage />
+            </PorRol>
+          }
+        />
+        <Route
+          path="perfil"
+          element={
+            <PorRol roles={['admin', 'editor', 'escritor']}>
+              <PerfilPage />
             </PorRol>
           }
         />
